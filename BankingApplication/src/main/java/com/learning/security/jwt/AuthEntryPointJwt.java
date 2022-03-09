@@ -18,6 +18,11 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
+/**
+ * Entry point for Spring security.
+ * @author Oliver Pagalanan
+ * @since Mar 9, 2022
+ */
 public class AuthEntryPointJwt implements AuthenticationEntryPoint {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(AuthEntryPointJwt.class);
