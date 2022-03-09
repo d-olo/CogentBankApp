@@ -19,8 +19,7 @@ spring:
 #        physical-strategy: com.learning.utils.CustomNamingStrategy
       ddl-auto: update    
     
-#com:
-#  cogent:
-#    fooddeliveryapp:
-#      jwtSecret: foodapp
-#      jwtExpirationMs: 86400000
+com:
+  learning:
+      jwtSecret: bankapp
+      jwtExpirationMs: 86400000
