@@ -6,7 +6,7 @@ package com.learning.enums;
  * @since Mar 7, 2022
  */
 public enum ERole {
-	ROLE_USER, 
+	ROLE_CUSTOMER, 
 	ROLE_STAFF,
 	ROLE_ADMIN;
 }

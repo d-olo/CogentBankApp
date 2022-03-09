@@ -20,7 +20,6 @@ import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.learning.enums.EnabledStatus;
-import com.learning.enums.ERole;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -49,7 +48,7 @@ public class User {
 	@JoinTable(name = "user_roles",
 	joinColumns = @JoinColumn(name = "user_id"),
 	inverseJoinColumns = @JoinColumn(name = "role_id"))
-	private Set<ERole> roles;
+	private Set<Role> roles;
 	
 	@OneToMany(mappedBy = "accountOwner",
 			cascade = CascadeType.ALL,
