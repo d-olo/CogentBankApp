@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.learning.entity.Account;
 import com.learning.entity.User;
 import com.learning.repo.UserRepository;
+import com.learning.service.UserService;
 
 @Service
 public class UserServiceImpl implements UserService {
