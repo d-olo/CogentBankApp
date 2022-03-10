@@ -5,7 +5,6 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.learning.entity.Account;
 import com.learning.entity.User;
 import com.learning.repo.UserRepository;
 
@@ -29,5 +28,6 @@ public class UserServiceImpl implements UserService {
 	public void updateUser(User user) {
 		userRepository.save(user);
 	}
+
 
 }

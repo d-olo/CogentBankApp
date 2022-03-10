@@ -1,9 +1,9 @@
 package com.learning.entity;
 
+import java.util.Date;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -15,6 +15,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.learning.enums.AccountType;
 import com.learning.enums.ApprovedStatus;
 import com.learning.enums.EnabledStatus;
@@ -36,18 +37,20 @@ import lombok.NoArgsConstructor;
 public class Account {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "role_id")
-	private Integer id;
+	private Integer accountId;
 	private Integer accountNumber;
-	private Long accountBalance;
+	private Double accountBalance;
 	
 	private EnabledStatus enabledStatus;
-	private ApprovedStatus approvedStatus = ApprovedStatus.STATUS_NOT_APPROVED;
+	private ApprovedStatus approvedStatus;
 	
 	@ManyToOne
 	private User accountOwner;
 	@Enumerated(EnumType.STRING)
 	private AccountType accountType;
+	
+	@JsonFormat(pattern = "yyyy-MM-dd")
+	private Date dateCreated;
 	
 	@OneToMany(mappedBy = "account",
 			cascade = CascadeType.ALL,

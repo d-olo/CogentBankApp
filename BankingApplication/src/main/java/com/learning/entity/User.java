@@ -1,6 +1,5 @@
 package com.learning.entity;
 
-import java.sql.Date;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -18,7 +17,6 @@ import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.learning.enums.EnabledStatus;
 
 import lombok.AllArgsConstructor;
@@ -58,7 +56,9 @@ public class User {
 	@Enumerated(EnumType.STRING)
 	private EnabledStatus enabledStatus;
 	
-	@JsonFormat(pattern = "yyyy-MM-dd")
-	private Date dateCreated;
+	@OneToMany(mappedBy = "mainUser", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private Set<Beneficiary> beneficiaries;
+	
+	
 	
 }

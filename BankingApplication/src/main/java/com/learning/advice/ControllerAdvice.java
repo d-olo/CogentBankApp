@@ -1,29 +1,18 @@
 package com.learning.advice;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.ConstraintViolationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.learning.exception.apierror.ApiError;
 
 @org.springframework.web.bind.annotation.ControllerAdvice
@@ -31,14 +20,13 @@ public class ControllerAdvice extends ResponseEntityExceptionHandler  {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(ControllerAdvice.class);
 	
-//	@ExceptionHandler(DataNotFoundException.class)	// is responsible for handling 
-//	public ResponseEntity<?> dataNotFoundException(DataNotFoundException e) {
-//		//Map<String,String> map = new HashMap<>();
-//		//map.put("message", "no data found");
-//		ApiError apiError = new ApiError(HttpStatus.NOT_FOUND, e.getMessage(), e);
-//		
-//		return buildResponseEntity(apiError);
-//	}
+	@ExceptionHandler(RuntimeException.class)	// is responsible for handling 
+	public ResponseEntity<?> dataNotFoundException(RuntimeException e) {
+		
+		ApiError apiError = new ApiError(HttpStatus.NOT_FOUND, e.getMessage(), e);
+		
+		return buildResponseEntity(apiError);
+	}
 	
 	// Takes care of validation errors implicitly
 	// Will work with issues regarding @Valid (post method)
