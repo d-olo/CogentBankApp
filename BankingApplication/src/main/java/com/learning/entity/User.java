@@ -59,6 +59,12 @@ public class User {
 	@OneToMany(mappedBy = "mainUser", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Set<Beneficiary> beneficiaries;
 	
-	
+	private String phone;
+	private String pan;
+	private String aadhar;
+	private String secretQuestion;
+	private String secretAnswer;
+	private String panImage;
+	private String aadharImage;
 	
 }
