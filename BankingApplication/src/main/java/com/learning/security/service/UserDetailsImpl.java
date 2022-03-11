@@ -15,6 +15,11 @@ import com.learning.entity.User;
 import lombok.Data;
 
 @Data
+/**
+ * Handles user details.
+ * @author Oliver Pagalanan
+ * @since Mar 9, 2022
+ */
 public class UserDetailsImpl implements UserDetails {
 	private Integer id;
 	private String username;
@@ -79,16 +84,24 @@ public class UserDetailsImpl implements UserDetails {
 		return true;
 	}
 	
+	@Override
+	public int hashCode() {
+		return Objects.hash(id);
+	}
+
+	@Override
 	public boolean equals(Object obj) {
-		if(this == obj) {
+		if (this == obj)
 			return true;
-		}
-		if(obj == null || getClass() != obj.getClass()) {
+		if (obj == null)
 			return false;
-		}
-		
-		UserDetailsImpl user = (UserDetailsImpl) obj;
-		return Objects.equals(id, user.id);
+		if (getClass() != obj.getClass())
+			return false;
+		UserDetailsImpl other = (UserDetailsImpl) obj;
+		return Objects.equals(id, other.id);
 	} 	
+	
+	
+	
 
 }
