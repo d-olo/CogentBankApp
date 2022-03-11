@@ -18,6 +18,11 @@ import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.UnsupportedJwtException;
 
 @Component
+/**
+ * Manages JSON web token validation and generation.
+ * @author Oliver Pagalanan
+ * @since Mar 9, 2022
+ */
 public class JwtUtils {
 	private static final Logger LOGGER = 
 			LoggerFactory.getLogger(JwtUtils.class);

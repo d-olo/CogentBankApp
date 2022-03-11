@@ -18,7 +18,11 @@ import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-
+/**
+ * Manages token authentication.
+ * @author Oliver Pagalanan
+ * @since Mar 9, 2022
+ */
 public class AuthTokenFilter extends OncePerRequestFilter {
 	
 	@Autowired
