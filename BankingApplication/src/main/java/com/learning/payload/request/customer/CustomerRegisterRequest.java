@@ -1,4 +1,4 @@
-package com.learning.payload.request;
+package com.learning.payload.request.customer;
 
 import javax.validation.constraints.NotBlank;
 
@@ -8,7 +8,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @Validated
 /**
  * The request body for customer registration.

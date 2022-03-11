@@ -22,6 +22,11 @@ import com.learning.security.service.UserDetailsServiceImpl;
 @Configuration
 @EnableWebSecurity	// makes sure that security environment is enabled
 @EnableGlobalMethodSecurity(prePostEnabled=true)	//
+/**
+ * Manages security settings.
+ * @author Oliver Pagalanan
+ * @since Mar 9, 2022
+ */
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	@Autowired

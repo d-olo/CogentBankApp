@@ -10,5 +10,5 @@ import com.learning.enums.ERole;
 
 @Repository
 public interface RoleRepository extends JpaRepository<Role, Integer> {
-	Optional<Role> findByRoleName(ERole roleName);
+	public Optional<Role> findByRoleName(ERole roleName);
 }

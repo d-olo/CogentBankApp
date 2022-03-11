@@ -2,7 +2,6 @@ package com.learning.service;
 
 import java.util.Optional;
 
-import com.learning.entity.Account;
 import com.learning.entity.User;
 
 public interface UserService {
