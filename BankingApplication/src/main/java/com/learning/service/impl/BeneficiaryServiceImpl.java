@@ -1,9 +1,10 @@
-package com.learning.service;
+package com.learning.service.impl;
 
 import org.springframework.stereotype.Service;
 
 import com.learning.entity.Beneficiary;
 import com.learning.repo.BeneficiaryRepository;
+import com.learning.service.BeneficiaryService;
 
 @Service
 public class BeneficiaryServiceImpl implements BeneficiaryService {

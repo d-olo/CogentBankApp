@@ -1,4 +1,4 @@
-package com.learning.payload.request;
+package com.learning.payload.request.customer;
 
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AccountRequest {
+public class AddAccountRequest {
 	@Enumerated(EnumType.STRING)
 	private AccountType accountType;
 	@NotNull

@@ -1,4 +1,4 @@
-package com.learning.payload.response;
+package com.learning.payload.response.customer;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -11,20 +11,15 @@ import java.util.stream.Collectors;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-<<<<<<< HEAD
 import org.springframework.security.access.prepost.PreAuthorize;
-=======
->>>>>>> master
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-<<<<<<< HEAD
 import org.springframework.web.bind.annotation.DeleteMapping;
-=======
->>>>>>> master
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -42,36 +37,23 @@ import com.learning.enums.AccountType;
 import com.learning.enums.ApprovedStatus;
 import com.learning.enums.ERole;
 import com.learning.enums.EnabledStatus;
-<<<<<<< HEAD
-import com.learning.payload.request.AccountRequest;
-import com.learning.payload.request.BeneficiaryRequest;
-import com.learning.payload.request.LoginRequest;
-import com.learning.payload.request.RegisterRequest;
-import com.learning.payload.request.TransferRequest;
-import com.learning.payload.response.AccountByIdResponse;
-import com.learning.payload.response.AccountListResponse;
-import com.learning.payload.response.AccountResponse;
-import com.learning.payload.response.BeneficiaryListResponse;
-import com.learning.payload.response.JwtResponse;
-import com.learning.payload.response.RegisterResponse;
-=======
 import com.learning.exception.EnumNotFoundException;
+import com.learning.payload.request.customer.AddAccountRequest;
 import com.learning.payload.request.customer.AuthenticationRequest;
+import com.learning.payload.request.customer.AddBeneficiaryRequest;
 import com.learning.payload.request.customer.CustomerRegisterRequest;
-import com.learning.payload.response.CustomerRegisterResponse;
+import com.learning.payload.request.customer.TransferRequest;
 import com.learning.payload.response.JwtResponse;
->>>>>>> master
+import com.learning.payload.response.customer.AccountByIdResponse;
+import com.learning.payload.response.customer.AccountListResponse;
+import com.learning.payload.response.customer.AccountResponse;
+import com.learning.payload.response.customer.BeneficiaryListResponse;
+import com.learning.payload.response.customer.RegisterResponse;
 import com.learning.repo.RoleRepository;
 import com.learning.security.jwt.JwtUtils;
 import com.learning.security.service.UserDetailsImpl;
 import com.learning.service.AccountService;
-<<<<<<< HEAD
 import com.learning.service.BeneficiaryService;
-import com.learning.service.UserService;
-
-@RestController
-@RequestMapping("/api/customer")
-=======
 import com.learning.service.UserService;
 
 @RestController
@@ -81,63 +63,38 @@ import com.learning.service.UserService;
  * @author Dionel Olo, Oliver Pagalanan
  * @since Mar 8, 2022
  */
->>>>>>> master
+
 public class CustomerController {
 	
 	@Autowired
 	// Manages database operations for the user.
 	private UserService userService;
 	@Autowired
-	private AccountService accountService;
-	@Autowired
 	// Manages database operations for a user's accounts.
 	private AccountService accountService;
-	
 	@Autowired
 	// Manages access to the role repository.
 	private RoleRepository roleRepository;
 	@Autowired
 	private BeneficiaryService beneficiaryService;
 	@Autowired
-	AuthenticationManager authenticationManager;
-	@Autowired
-	PasswordEncoder passwordEncoder;
-	@Autowired
-	JwtUtils jwtUtils;
-	
-<<<<<<< HEAD
-	
-	@PostMapping("/register")
-	public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest registerRequest) {
-		User user = new User();
-		Set<Role> roles = new HashSet<>();
-		Role role = roleRepository.findByRoleName(ERole.ROLE_CUSTOMER).orElseThrow(()->new RuntimeException("Role error"));
-		roles.add(role);
-		
-		user.setUsername(registerRequest.getUsername());
-		user.setFullName(registerRequest.getFullName());
-		user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-=======
-	@Autowired
 	// Encodes passwords for database storage.	
 	PasswordEncoder passwordEncoder;
-	
 	@Autowired
 	// Manages authentication.
 	AuthenticationManager authenticationManager;
-	
 	@Autowired
 	// Utilities for JSON web tokens.
 	JwtUtils jwtUtils;
-	
+		
 	@PostMapping(value = "/register")
 	/**
 	 * Registers a new customer.
 	 * @param request A request entity containing customer information.
 	 * @return An HTTP response containing the customer added to the database.
 	 */
-	public ResponseEntity<?> register
-		(@Valid @RequestBody CustomerRegisterRequest request) {
+	public ResponseEntity<?> register(
+			@Valid @RequestBody CustomerRegisterRequest request) {
 		
 		// Creating new user.
 		User user = new User();
@@ -151,7 +108,6 @@ public class CustomerController {
 				.orElseThrow(() -> 
 					new EnumNotFoundException("Customer role not in database."));
 		roles.add(customerRole);
->>>>>>> master
 		user.setRoles(roles);
 		
 		// Initialization of empty fields.
@@ -159,7 +115,7 @@ public class CustomerController {
 		user.setEnabledStatus(EnabledStatus.STATUS_DISABLED);
 		user.setBeneficiaries(new HashSet<Beneficiary>());
 		
-		
+		// Adding user to DB.
 		User regUser = userService.addUser(user);
 		
 		RegisterResponse registerResponse = new RegisterResponse();
@@ -168,13 +124,20 @@ public class CustomerController {
 		registerResponse.setFullName(regUser.getFullName());
 		registerResponse.setPassword(regUser.getPassword());
 		
-		return ResponseEntity.status(201).body(registerResponse);
+		return ResponseEntity.status(HttpStatus.CREATED).body(registerResponse);
 	}
 	
 	@PostMapping("/authenticate")
-	public ResponseEntity<?> authenticate(@Valid @RequestBody LoginRequest loginRequest) {
+	/** 
+	 * Returns a JWT for customer login.
+	 * @param loginRequest
+	 * @return
+	 */
+	public ResponseEntity<?> authenticate(
+			@Valid @RequestBody AuthenticationRequest loginRequest) {
 		Authentication authentication = authenticationManager.
-				authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+				authenticate(new UsernamePasswordAuthenticationToken
+						(loginRequest.getUsername(), loginRequest.getPassword()));
 		
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 		String jwt = jwtUtils.generateToken(authentication);
@@ -184,23 +147,38 @@ public class CustomerController {
 		List<String> roles = userDetailsImpl.getAuthorities().stream()
 				.map(e-> e.getAuthority()).collect(Collectors.toList());
 		
-		return ResponseEntity.ok(new JwtResponse(jwt, userDetailsImpl.getId(), userDetailsImpl.getUsername(), userDetailsImpl.getFullName(), roles));
+		return ResponseEntity.ok(new JwtResponse(
+				jwt, 
+				userDetailsImpl.getId(), 
+				userDetailsImpl.getUsername(), 
+				userDetailsImpl.getFullName(), 
+				roles));
 	
 	}
 	
 	/** INCOMPLETE **/
-	@PostMapping("/{id}/account")
-	public ResponseEntity<?> addAccount(@PathVariable Integer id, AccountRequest accountRequest) {
-		User user = userService.getUserById(id).orElseThrow(()->new RuntimeException("Sorry, Customer with ID: " + id + " not found"));
+	@PostMapping("/:{id}/account")
+	/**
+	 * Creates a new account.
+	 * @param id Internal ID of the customer to create an account for.
+	 * @param accountRequest The details of the account to be created
+	 * @return An HTTP response containing the created account.
+	 */
+	public ResponseEntity<?> addAccount(
+			@PathVariable Integer id, AddAccountRequest accountRequest) {
+		User user = userService.getUserById(id).orElseThrow(
+				()->new RuntimeException("Customer with ID: " + id + " not found"));
 		Account account = new Account();
 		
 		switch (accountRequest.getAccountType().name()) {
 		case "savings":
-			account.setAccountType(accountService.findByAccountType(AccountType.ACCOUNT_SAVINGS)
+			account.setAccountType(
+					accountService.findByAccountType(AccountType.ACCOUNT_SAVINGS)
 			.orElseThrow(() -> new RuntimeException("Account Type error")));
 			break;
 		case "checking":
-			account.setAccountType(accountService.findByAccountType(AccountType.ACCOUNT_CHECKING)
+			account.setAccountType(
+					accountService.findByAccountType(AccountType.ACCOUNT_CHECKING)
 			.orElseThrow(() -> new RuntimeException("Account Type error")));
 			break;
 
@@ -226,31 +204,46 @@ public class CustomerController {
 		accountResponse.setDateCreated(account.getDateCreated());
 		accountResponse.setCustomerId(account.getAccountOwner().getId());
 		
-		return ResponseEntity.status(200).body(accountResponse);
+		return ResponseEntity.status(HttpStatus.OK).body(accountResponse);
 	}
 	
 	@PutMapping("/{id}/account/{accountNo}")
 	@PreAuthorize("hasRole('STAFF')")
-	public ResponseEntity<?> approveAccount(@PathVariable("id") Integer id, @PathVariable("accountNo") Integer accountNumber) {
-		User user = userService.getUserById(id).orElseThrow(()->new RuntimeException("Sorry, Customer with ID: " + id + " not found"));
+	/**
+	 * A method for staff members to approve a certain account of a customer.
+	 * @param id The customer whose ID to search.
+	 * @param accountNumber The account whose ID to approve.
+	 * @return An HTTP response containing the approved account.
+	 */
+	public ResponseEntity<?> approveAccount(
+			@PathVariable("id") Integer id, @PathVariable("accountNo") Integer accountNumber) {
+		User user = userService.getUserById(id).orElseThrow(
+				()->new RuntimeException("Sorry, Customer with ID: " + id + " not found"));
 		Account account = null;
 		
 		for(Account a : user.getAccounts()) {
 			if(a.getAccountNumber() == accountNumber) {
-				account = accountService.findByAccountNumber(a.getAccountId()).orElseThrow(()-> new RuntimeException("Account not found"));
+				account = accountService.findByAccountNumber(
+						a.getAccountId()).orElseThrow(()-> new RuntimeException("Account not found"));
 				break;
 			}
 		}
 		
 		account.setApprovedStatus(ApprovedStatus.STATUS_APPROVED);
 		accountService.approveAccount(account);
-		return ResponseEntity.status(200).body(account);
+		return ResponseEntity.status(HttpStatus.OK).body(account);
 		
 	}
 	
 	@GetMapping("/{id}/account")
+	/**
+	 * Gets all accounts from a certain user.
+	 * @param id The user whose accounts to check.
+	 * @return An HTTP response containing the list of accounts.
+	 */
 	public ResponseEntity<?> getAllAccounts(@PathVariable("id") Integer id) {
-		User user = userService.getUserById(id).orElseThrow(()->new RuntimeException("Sorry, Customer with ID: " + id + " not found"));
+		User user = userService.getUserById(id).orElseThrow(
+				()->new RuntimeException("Sorry, Customer with ID: " + id + " not found"));
 		
 		Set<Account> accounts = new HashSet<>();
 		
@@ -274,19 +267,31 @@ public class CustomerController {
 	}
 	
 	@GetMapping("/{id}")
+	/**
+	 * Gets a user by ID.
+	 * @param id ID to search.
+	 * @return HTTP response containing the user.
+	 */
 	public ResponseEntity<?> getUserById(@PathVariable("id") Integer id) {
-		User user = userService.getUserById(id).orElseThrow(()->new RuntimeException("Sorry, Customer with ID: " + id + " not found"));
+		User user = userService.getUserById(id).orElseThrow(
+				()->new RuntimeException("Sorry, Customer with ID: " + id + " not found"));
 		
-		return ResponseEntity.status(200).body(user);
+		return ResponseEntity.status(HttpStatus.OK).body(user);
 		
 	}
 	
-<<<<<<< HEAD
-	
 	/** INCOMPLETE **/
-	@PutMapping("{id}")
-	public ResponseEntity<?> updateUser(@PathVariable("id") Integer id, RegisterRequest registerRequest) {
-		User user = userService.getUserById(id).orElseThrow(()->new RuntimeException("Sorry, Customer with ID: " + id + " not found"));
+	@PutMapping("/{id}")
+	/**
+	 * Updates the user of the given ID.
+	 * @param id ID to search.
+	 * @param registerRequest Updated customer data.
+	 * @return HTTP response OK.
+	 */
+	public ResponseEntity<?> updateUser(@PathVariable("id") Integer id, 
+			CustomerRegisterRequest registerRequest) {
+		User user = userService.getUserById(id).orElseThrow(
+				()->new RuntimeException("Sorry, Customer with ID: " + id + " not found"));
 		
 		user.setUsername(registerRequest.getUsername());
 		user.setFullName(registerRequest.getFullName());
@@ -296,13 +301,21 @@ public class CustomerController {
 			
 		userService.updateUser(user);
 		
-		return ResponseEntity.status(200).build();
+		return ResponseEntity.status(HttpStatus.OK).build();
 		
 	}
 	
+	/**
+	 * Gets an account from a customer.
+	 * @param id The customer to check.
+	 * @param accountId The account to get.
+	 * @return HTTP response containing the account data.
+	 */
 	@GetMapping("/{id}/account/{accountId}")
-	public ResponseEntity<?> getAccountById(@PathVariable("id") Integer id, @PathVariable("accountId") Integer accountId) {
-		User user = userService.getUserById(id).orElseThrow(()->new RuntimeException("Sorry, Customer with ID: " + id + " not found"));
+	public ResponseEntity<?> getAccountById(
+			@PathVariable("id") Integer id, @PathVariable("accountId") Integer accountId) {
+		User user = userService.getUserById(id).orElseThrow(
+				()->new RuntimeException("Sorry, Customer with ID: " + id + " not found"));
 		Account account = null;
 		
 		for(Account a : user.getAccounts()) {
@@ -327,13 +340,21 @@ public class CustomerController {
 		
 		response.setTransactions(transactions);
 		
-		return ResponseEntity.status(200).body(response);
+		return ResponseEntity.status(HttpStatus.OK).body(response);
 		
 	}
 	
 	@PostMapping("{id}/beneficiary")
-	public ResponseEntity<?> addBeneficiary(@PathVariable("id") Integer id, BeneficiaryRequest beneficiaryRequest) {
-		User user = userService.getUserById(id).orElseThrow(()-> new RuntimeException("Sorry, Customer with ID: " + id + " not found"));
+	/**
+	 * Adds a beneficiary to a user.
+	 * @param id The ID of the user to modify.
+	 * @param beneficiaryRequest The data of the beneficiary to add.
+	 * @return HTTP response confirming the beneficiary addition.
+	 */
+	public ResponseEntity<?> addBeneficiary(
+			@PathVariable("id") Integer id, AddBeneficiaryRequest beneficiaryRequest) {
+		User user = userService.getUserById(id).orElseThrow(
+				()-> new RuntimeException("Sorry, Customer with ID: " + id + " not found"));
 		
 		Beneficiary beneficiary = new Beneficiary();
 		
@@ -348,13 +369,21 @@ public class CustomerController {
 		
 		beneficiaryService.addBeneficiary(beneficiary);
 		
-		return ResponseEntity.status(200).body("Beneficiary with Account Number: "+ beneficiaryRequest.getAccountNumber() + " added");
+		return ResponseEntity.status(HttpStatus.OK).body(
+				"Beneficiary with Account Number: "+ beneficiaryRequest.getAccountNumber() + " added");
 	
 	}
 	
 	@GetMapping("{id}/beneficiary")
+	/**
+	 * Gets all beneficiaries of a user.
+	 * @param id The user to check.
+	 * @return HTTP response containing the list of beneficiaries.
+	 */
 	public ResponseEntity<?> getBeneficiaries(@PathVariable("id") Integer id) {
-		User user = userService.getUserById(id).orElseThrow(()-> new RuntimeException("Sorry, Customer with ID: " + id + " not found"));
+		User user = userService.getUserById(id)
+				.orElseThrow(()-> new RuntimeException(
+						"Sorry, Customer with ID: " + id + " not found"));
 		Set<Beneficiary> beneficiaries = new HashSet<>();
 		
 		user.getBeneficiaries().forEach(e-> {
@@ -363,7 +392,7 @@ public class CustomerController {
 		
 		Set<BeneficiaryListResponse> response = null;
 		
-		if(beneficiaries != null) {
+		if(beneficiaries.size() > 0) {
 		
 			response = new HashSet<>();
 			
@@ -377,16 +406,23 @@ public class CustomerController {
 			response = Collections.emptySet();
 		}
 		
-		return ResponseEntity.status(200).body(response);
+		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
 	@DeleteMapping("{id}/beneficiary/{beneficiaryId}")
 	@PreAuthorize("hasRole('CUSTOMER')")
+	/**
+	 * Removes a beneficiary from a customer. 
+	 * @param id The customer to search.
+	 * @param beneficiaryId The beneficiary to remove.
+	 * @return HTTP response confirming deletion.
+	 */
 	public ResponseEntity<?> deleteBeneficiary(@PathVariable("id") Integer id, @PathVariable("beneficiaryId") Integer beneficiaryId) {
 		
 		if(beneficiaryService.existsById(beneficiaryId)) {
 			beneficiaryService.deleteBeneficiary(beneficiaryId);
-			return ResponseEntity.status(200).body("Beneficiary deleted successfully");
+			return ResponseEntity.status(HttpStatus.OK)
+					.body("Beneficiary deleted successfully");
 		} else {
 			throw new RuntimeException("Unable to delete beneficiary");
 		}
@@ -396,6 +432,11 @@ public class CustomerController {
 	/** INCOMPLETE **/
 	@PutMapping("/transfer")
 	@PreAuthorize("hasRole('CUSTOMER')")
+	/**
+	 * Transfers from one account to another.
+	 * @param transferRequest Data of the transfer request.
+	 * @return HTTP response confirming successful transfer.
+	 */
 	public ResponseEntity<?> transferAmount(TransferRequest transferRequest) {
 		Account toAccount = accountService.findByAccountNumber(transferRequest.getToAccNumber()).get();
 		Account fromAccount = accountService.findByAccountNumber(transferRequest.getFromAccNumber()).get();
@@ -408,78 +449,7 @@ public class CustomerController {
 		accountService.addAccount(fromAccount);	// not sure if correct
 		accountService.addAccount(toAccount);	// not sure if correct
 		
-		return ResponseEntity.status(200).build();
+		return ResponseEntity.status(HttpStatus.OK).build();
 	}
 	
-	
-=======
-	@PostMapping("/authenticate")
-	/**
-	 * Given a username and password, authenticates a user.
-	 * @param loginRequest
-	 * @return An HTTP response containing a JSON web token.
-	 */
-	public ResponseEntity<?> authenticate
-		(@Valid @RequestBody AuthenticationRequest loginRequest) {
-		
-		// Gets authentication from the username and password.
-		Authentication authentication = authenticationManager.
-				authenticate(new UsernamePasswordAuthenticationToken
-						(loginRequest.getUsername(), loginRequest.getPassword()));
-		
-		// Generates the JWT from the authentication.
-		SecurityContextHolder.getContext().setAuthentication(authentication);
-		String jwt = jwtUtils.generateToken(authentication);
-		
-		UserDetailsImpl userDetailsImpl = (UserDetailsImpl) authentication.getPrincipal();		
-		
-		List<String> roles = userDetailsImpl.getAuthorities().stream()
-				.map(e-> e.getAuthority()).collect(Collectors.toList());
-		
-		// Builds a response from the JWT.
-		return ResponseEntity.ok(new JwtResponse(
-				jwt, 
-				userDetailsImpl.getId(), 
-				userDetailsImpl.getUsername(), 
-				userDetailsImpl.getFullName(), 
-				roles));
-	
-	}
-	
-
-	
-	@PostMapping("/{id}/account")
-	public ResponseEntity<?> addAccount(@PathVariable Integer id, Account account) {
-		User user = userService.getUserById(id).orElseThrow(()->new RuntimeException("Sorry, Customer with ID: " + id + " not found"));
-		
-		account.setAccountOwner(user);
-		
-		accountService.addAccount(account);
-		
-		return ResponseEntity.status(200).body(account);
-	}
-	
-	@GetMapping("/{id}")
-	public ResponseEntity<?> getUserById(@PathVariable("id") Integer id) {
-		User user = userService.getUserById(id).orElseThrow(()->new RuntimeException("Sorry, Customer with ID: " + id + " not found"));
-		
-		return ResponseEntity.status(200).body(user);
-		
-	}
-	
-	public ResponseEntity<?> updateUser(@PathVariable("id") Integer id, User newUser) {
-		User user = userService.getUserById(id).orElseThrow(()->new RuntimeException("Sorry, Customer with ID: " + id + " not found"));
-		
-		if(user != null) {
-			user.setFullName(newUser.getFullName());
-			
-			userService.updateUser(user);
-		} else {
-			throw new RuntimeException("Sorry, Customer with ID: " + id + " not found");
-		}
-		
-		return ResponseEntity.status(200).build();
-		
-	}
->>>>>>> master
 }

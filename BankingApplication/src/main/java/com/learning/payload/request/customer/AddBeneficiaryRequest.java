@@ -1,4 +1,4 @@
-package com.learning.payload.request;
+package com.learning.payload.request.customer;
 
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -9,7 +9,7 @@ import com.learning.enums.ApprovedStatus;
 import lombok.Data;
 
 @Data
-public class BeneficiaryRequest {
+public class AddBeneficiaryRequest {
 	private Integer accountNumber;
 	@Enumerated(EnumType.STRING)
 	private AccountType accountType;

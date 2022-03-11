@@ -1,4 +1,4 @@
-package com.learning.payload.request;
+package com.learning.payload.request.customer;
 
 import com.learning.entity.User;
 
