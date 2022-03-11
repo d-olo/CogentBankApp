@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -45,9 +46,11 @@ import com.learning.enums.EnabledStatus;
 <<<<<<< HEAD
 import com.learning.payload.request.AccountRequest;
 import com.learning.payload.request.BeneficiaryRequest;
+import com.learning.payload.request.ForgotPasswordRequest;
 import com.learning.payload.request.LoginRequest;
 import com.learning.payload.request.RegisterRequest;
 import com.learning.payload.request.TransferRequest;
+import com.learning.payload.request.UpdateCustomerRequest;
 import com.learning.payload.response.AccountByIdResponse;
 import com.learning.payload.response.AccountListResponse;
 import com.learning.payload.response.AccountResponse;
@@ -208,7 +211,9 @@ public class CustomerController {
 			break;
 		}
 		
-		//account.setAccountNumber(????);
+		Random ran = new Random();
+     
+		account.setAccountNumber(ran.nextInt(9999) + 1000);
 		account.setAccountBalance(accountRequest.getAccountBalance());
 		account.setApprovedStatus(accountRequest.getApprovedStatus());
 		account.setAccountOwner(user);
@@ -218,7 +223,7 @@ public class CustomerController {
 		accountService.addAccount(account);
 		
 		user.getAccounts().add(account);
-		userService.updateUser(user);	// not sure if correct way
+		userService.updateUser(user);	// not sure if correct way or necessary
 		
 		AccountResponse accountResponse = new AccountResponse();
 		accountResponse.setAccountType(account.getAccountType());
@@ -284,15 +289,19 @@ public class CustomerController {
 <<<<<<< HEAD
 	
 	/** INCOMPLETE **/
+	/**NEED HELP **/
 	@PutMapping("{id}")
-	public ResponseEntity<?> updateUser(@PathVariable("id") Integer id, RegisterRequest registerRequest) {
+	public ResponseEntity<?> updateUser(@PathVariable("id") Integer id, UpdateCustomerRequest updateCustomerRequest) {
 		User user = userService.getUserById(id).orElseThrow(()->new RuntimeException("Sorry, Customer with ID: " + id + " not found"));
 		
-		user.setUsername(registerRequest.getUsername());
-		user.setFullName(registerRequest.getFullName());
-		user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-		
-		/* Needs more fields */	
+		user.setFullName(updateCustomerRequest.getFullName());
+		user.setPhone(updateCustomerRequest.getPhone());
+		user.setPan(updateCustomerRequest.getPan());
+		user.setAadhar(updateCustomerRequest.getAadhar());
+		user.setSecretQuestion(updateCustomerRequest.getSecretQuestion());
+		user.setSecretAnswer(updateCustomerRequest.getSecretAnswer());
+		user.setPanImage(updateCustomerRequest.getPanImage());		// need to change
+		user.setAadharImage(updateCustomerRequest.getAadharImage());	// need to change
 			
 		userService.updateUser(user);
 		
@@ -344,7 +353,7 @@ public class CustomerController {
 		
 		user.getBeneficiaries().add(beneficiary);
 		
-		userService.updateUser(user);
+		userService.updateUser(user);	// not sure if correct way or necessary
 		
 		beneficiaryService.addBeneficiary(beneficiary);
 		
@@ -411,6 +420,31 @@ public class CustomerController {
 		return ResponseEntity.status(200).build();
 	}
 	
+	/** INCOMPLETE **/
+	@GetMapping("{username}/forgot/question/answer")
+	@PreAuthorize("hasRole('CUSTOMER')")
+	public ResponseEntity<?> forgotPassword(@PathVariable("username") String username, ForgotPasswordRequest forgotPasswordRequest) {
+		User user = userService.getUserByUsername(username).get();
+		
+		/* Needs implementation */
+		
+		return ResponseEntity.status(200).build();
+	}
+	
+	
+	/** INCOMPLETE **/
+	@PutMapping("/{username}/forgot")
+	@PreAuthorize("hasRole('CUSTOMER')")
+	public ResponseEntity<?> newPassword(@PathVariable("username") String username, LoginRequest loginRequest) {
+		User user = userService.getUserByUsername(username).get();
+		
+		user.setPassword(loginRequest.getPassword());
+		
+		userService.updateUser(user);
+		
+		return ResponseEntity.status(200).body("New password updated");
+		
+	}
 	
 =======
 	@PostMapping("/authenticate")

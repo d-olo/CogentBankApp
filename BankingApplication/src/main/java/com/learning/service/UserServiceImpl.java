@@ -24,6 +24,11 @@ public class UserServiceImpl implements UserService {
 	public Optional<User> getUserById(Integer id) {
 		return userRepository.findById(id);
 	}
+	
+	@Override
+	public Optional<User> getUserByUsername(String username) {
+		return userRepository.findByUsername(username);
+	}
 
 	@Override
 	public void updateUser(User user) {
