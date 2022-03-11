@@ -29,7 +29,7 @@ public class Beneficiary {
 	private Integer accountNumber;
 	@Enumerated(EnumType.STRING)
 	private AccountType accountType;
-	private ApprovedStatus approvedStatus = ApprovedStatus.STATUS_NOT_APPROVED;
+	private ApprovedStatus approvedStatus;
 	private ActiveStatus activeStatus = ActiveStatus.STATUS_ACTIVE;
 	
 	@ManyToOne

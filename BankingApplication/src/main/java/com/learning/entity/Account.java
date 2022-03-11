@@ -1,6 +1,6 @@
 package com.learning.entity;
 
-import java.util.Date;
+import java.sql.Date;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
