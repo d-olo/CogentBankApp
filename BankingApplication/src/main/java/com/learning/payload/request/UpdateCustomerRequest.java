@@ -1,7 +1,6 @@
 package com.learning.payload.request;
 
 import javax.validation.constraints.NotBlank;
-
 import lombok.Data;
 
 @Data
@@ -20,4 +19,5 @@ public class UpdateCustomerRequest {
 	private String secretQuestion;
 	@NotBlank
 	private String secretAnswer;
+
 }

@@ -67,6 +67,7 @@ public class User {
 	private String secretAnswer;
 	private String panImage;
 	private String aadharImage;
+
 	
 	 @Transient
 	    public String getPhotosImagePathPan() {

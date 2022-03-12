@@ -8,6 +8,9 @@ import com.learning.enums.ApprovedStatus;
 import lombok.Data;
 
 @Data
+/*
+ * Not yet implemented anywhere.
+ */
 public class ApproveRequest {
 	@NotNull
 	private Integer accountNumber;

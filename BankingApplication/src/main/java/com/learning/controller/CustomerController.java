@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -70,6 +71,7 @@ import com.learning.service.BeneficiaryService;
 import com.learning.service.UserService;
 import com.learning.utils.FileUploadUtil;
 
+
 @RestController
 @RequestMapping("/customer")
 /**
@@ -77,6 +79,7 @@ import com.learning.utils.FileUploadUtil;
  * @author Dionel Olo, Oliver Pagalanan
  * @since Mar 8, 2022
  */
+
 public class CustomerController {
 	
 	@Autowired
@@ -111,8 +114,8 @@ public class CustomerController {
 	 * @param request A request entity containing customer information.
 	 * @return An HTTP response containing the customer added to the database.
 	 */
-	public ResponseEntity<?> register
-		(@Valid @RequestBody CustomerRegisterRequest request) {
+	public ResponseEntity<?> register(
+			@Valid @RequestBody CustomerRegisterRequest request) {
 		
 		// Creating new user.
 		User user = new User();
@@ -134,7 +137,7 @@ public class CustomerController {
 		user.setEnabledStatus(EnabledStatus.STATUS_DISABLED);
 		user.setBeneficiaries(new HashSet<Beneficiary>());
 		
-		
+		// Adding user to DB.
 		User regUser = userService.addUser(user);
 		
 		RegisterResponse registerResponse = new RegisterResponse();
@@ -143,11 +146,12 @@ public class CustomerController {
 		registerResponse.setFullName(regUser.getFullName());
 		registerResponse.setPassword(regUser.getPassword());
 		
-		return ResponseEntity.status(201).body(registerResponse);
+		return ResponseEntity.status(HttpStatus.CREATED).body(registerResponse);
 	}
 	
 	
 	@PostMapping("/authenticate")
+
 	/**
 	 * Given a username and password, authenticates a user.
 	 * @param loginRequest
@@ -184,16 +188,24 @@ public class CustomerController {
 	@PostMapping("/{id}/account")
 	public ResponseEntity<?> addAccount(@Valid @PathVariable Integer id, AddAccountRequest accountRequest) {
 		User user = userService.getUserById(id).orElseThrow(()->new IdNotFoundException("Sorry, Customer with ID: " + id + " not found"));
+	/**
+	 * Creates a new account.
+	 * @param id Internal ID of the customer to create an account for.
+	 * @param accountRequest The details of the account to be created
+	 * @return An HTTP response containing the created account.
+	 */
 		Account account = new Account();
 		
 		switch (accountRequest.getAccountType().name()) {
 		case "savings":
-			account.setAccountType(accountService.findByAccountType(AccountType.ACCOUNT_SAVINGS)
-			.orElseThrow(() -> new EnumNotFoundException("Account Type error")));
+			account.setAccountType(
+					accountService.findByAccountType(AccountType.ACCOUNT_SAVINGS)
+			.orElseThrow(() -> new RuntimeException("Account Type error")));
 			break;
 		case "checking":
-			account.setAccountType(accountService.findByAccountType(AccountType.ACCOUNT_CHECKING)
-			.orElseThrow(() -> new EnumNotFoundException("Account Type error")));
+			account.setAccountType(
+					accountService.findByAccountType(AccountType.ACCOUNT_CHECKING)
+			.orElseThrow(() -> new RuntimeException("Account Type error")));
 			break;
 
 		default:
@@ -221,33 +233,48 @@ public class CustomerController {
 		accountResponse.setDateCreated(account.getDateCreated());
 		accountResponse.setCustomerId(account.getAccountOwner().getId());
 		
-		return ResponseEntity.status(200).body(accountResponse);
+		return ResponseEntity.status(HttpStatus.OK).body(accountResponse);
 	}
 	
 	/** COMPLETED **/
 	@PutMapping("/{id}/account/{accountNo}")
 	@PreAuthorize("hasRole('STAFF')")
-	public ResponseEntity<?> approveAccount(@PathVariable("id") Integer id, @PathVariable("accountNo") Integer accountNumber) {
-		User user = userService.getUserById(id).orElseThrow(()->new IdNotFoundException("Sorry, Customer with ID: " + id + " not found"));
+	/**
+	 * A method for staff members to approve a certain account of a customer.
+	 * @param id The customer whose ID to search.
+	 * @param accountNumber The account whose ID to approve.
+	 * @return An HTTP response containing the approved account.
+	 */
+	public ResponseEntity<?> approveAccount(
+			@PathVariable("id") Integer id, @PathVariable("accountNo") Integer accountNumber) {
+		User user = userService.getUserById(id).orElseThrow(
+				()->new RuntimeException("Sorry, Customer with ID: " + id + " not found"));
 		Account account = null;
 		
 		for(Account a : user.getAccounts()) {
 			if(a.getAccountNumber() == accountNumber) {
-				account = accountService.findByAccountNumber(a.getAccountId()).orElseThrow(()-> new RuntimeException("Account not found"));
+				account = accountService.findByAccountNumber(
+						a.getAccountId()).orElseThrow(()-> new RuntimeException("Account not found"));
 				break;
 			}
 		}
 		
 		account.setApprovedStatus(ApprovedStatus.STATUS_APPROVED);
 		accountService.approveAccount(account);
-		return ResponseEntity.status(200).body(account);
+		return ResponseEntity.status(HttpStatus.OK).body(account);
 		
 	}
 	
 	/** COMPLETED **/
 	@GetMapping("/{id}/account")
+	/**
+	 * Gets all accounts from a certain user.
+	 * @param id The user whose accounts to check.
+	 * @return An HTTP response containing the list of accounts.
+	 */
 	public ResponseEntity<?> getAllAccounts(@PathVariable("id") Integer id) {
-		User user = userService.getUserById(id).orElseThrow(()->new IdNotFoundException("Sorry, Customer with ID: " + id + " not found"));
+		User user = userService.getUserById(id).orElseThrow(
+				()->new RuntimeException("Sorry, Customer with ID: " + id + " not found"));
 		
 		Set<Account> accounts = new HashSet<>();
 		
@@ -272,6 +299,11 @@ public class CustomerController {
 	
 	/** COMPLETED **/
 	@GetMapping("/{id}")
+	/**
+	 * Gets a user by ID.
+	 * @param id ID to search.
+	 * @return HTTP response containing the user.
+	 */
 	public ResponseEntity<?> getUserById(@PathVariable("id") Integer id) {
 		User user = userService.getUserById(id).orElseThrow(()->new IdNotFoundException("Sorry, Customer with ID: " + id + " not found"));
 		
@@ -317,14 +349,23 @@ public class CustomerController {
         FileUploadUtil.saveFile(uploadDir, updatedUser.getPanImage(), multipartFilePan);
         FileUploadUtil.saveFile(uploadDir, updatedUser.getAadharImage(), multipartFileAadhar);
 		
-		return ResponseEntity.status(200).build();
+		return ResponseEntity.status(HttpStatus.OK).build();
 		
 	}
 	
 	/** NEEDS REVIEW **/
+	/**
+	 * Gets an account from a customer.
+	 * @param id The customer to check.
+	 * @param accountId The account to get.
+	 * @return HTTP response containing the account data.
+	 */
 	@GetMapping("/{id}/account/{accountId}")
-	public ResponseEntity<?> getAccountById(@PathVariable("id") Integer id, @PathVariable("accountId") Integer accountId) {
-		User user = userService.getUserById(id).orElseThrow(()->new IdNotFoundException("Sorry, Customer with ID: " + id + " not found"));
+	public ResponseEntity<?> getAccountById(
+			@PathVariable("id") Integer id, @PathVariable("accountId") Integer accountId) {
+		User user = userService.getUserById(id).orElseThrow(
+				()->new RuntimeException("Sorry, Customer with ID: " + id + " not found"));
+
 		Account account = null;
 		
 		for(Account a : user.getAccounts()) {
@@ -349,14 +390,22 @@ public class CustomerController {
 		
 		response.setTransactions(transactions);
 		
-		return ResponseEntity.status(200).body(response);
+		return ResponseEntity.status(HttpStatus.OK).body(response);
 		
 	}
 	
 	/** NEEDS REVIEW **/
 	@PostMapping("{id}/beneficiary")
-	public ResponseEntity<?> addBeneficiary(@Valid @PathVariable("id") Integer id, AddBeneficiaryRequest beneficiaryRequest) {
-		User user = userService.getUserById(id).orElseThrow(()-> new IdNotFoundException("Sorry, Customer with ID: " + id + " not found"));
+	/**
+	 * Adds a beneficiary to a user.
+	 * @param id The ID of the user to modify.
+	 * @param beneficiaryRequest The data of the beneficiary to add.
+	 * @return HTTP response confirming the beneficiary addition.
+	 */
+	public ResponseEntity<?> addBeneficiary(
+			@PathVariable("id") Integer id, AddBeneficiaryRequest beneficiaryRequest) {
+		User user = userService.getUserById(id).orElseThrow(
+				()-> new RuntimeException("Sorry, Customer with ID: " + id + " not found"));
 		
 		Beneficiary beneficiary = new Beneficiary();
 		
@@ -371,14 +420,22 @@ public class CustomerController {
 		
 		beneficiaryService.addBeneficiary(beneficiary);
 		
-		return ResponseEntity.status(200).body("Beneficiary with Account Number: "+ beneficiaryRequest.getAccountNumber() + " added");
+		return ResponseEntity.status(HttpStatus.OK).body(
+				"Beneficiary with Account Number: "+ beneficiaryRequest.getAccountNumber() + " added");
 	
 	}
 	
 	/** COMPLETED **/
 	@GetMapping("{id}/beneficiary")
+	/**
+	 * Gets all beneficiaries of a user.
+	 * @param id The user to check.
+	 * @return HTTP response containing the list of beneficiaries.
+	 */
 	public ResponseEntity<?> getBeneficiaries(@PathVariable("id") Integer id) {
-		User user = userService.getUserById(id).orElseThrow(()-> new IdNotFoundException("Sorry, Customer with ID: " + id + " not found"));
+		User user = userService.getUserById(id)
+				.orElseThrow(()-> new RuntimeException(
+						"Sorry, Customer with ID: " + id + " not found"));
 		Set<Beneficiary> beneficiaries = new HashSet<>();
 		
 		user.getBeneficiaries().forEach(e-> {
@@ -387,7 +444,7 @@ public class CustomerController {
 		
 		Set<BeneficiaryListResponse> response = null;
 		
-		if(beneficiaries != null) {
+		if(beneficiaries.size() > 0) {
 		
 			response = new HashSet<>();
 			
@@ -401,17 +458,24 @@ public class CustomerController {
 			response = Collections.emptySet();
 		}
 		
-		return ResponseEntity.status(200).body(response);
+		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
 	/** COMPLETED **/
 	@DeleteMapping("{id}/beneficiary/{beneficiaryId}")
 	@PreAuthorize("hasRole('CUSTOMER')")
+	/**
+	 * Removes a beneficiary from a customer. 
+	 * @param id The customer to search.
+	 * @param beneficiaryId The beneficiary to remove.
+	 * @return HTTP response confirming deletion.
+	 */
 	public ResponseEntity<?> deleteBeneficiary(@PathVariable("id") Integer id, @PathVariable("beneficiaryId") Integer beneficiaryId) {
 		
 		if(beneficiaryService.existsById(beneficiaryId)) {
 			beneficiaryService.deleteBeneficiary(beneficiaryId);
-			return ResponseEntity.status(200).body("Beneficiary deleted successfully");
+			return ResponseEntity.status(HttpStatus.OK)
+					.body("Beneficiary deleted successfully");
 		} else {
 			throw new NoDataFoundException("Unable to delete beneficiary");
 		}
@@ -421,7 +485,12 @@ public class CustomerController {
 	/** NEEDS REVIEW **/
 	@PutMapping("/transfer")
 	@PreAuthorize("hasRole('CUSTOMER')")
-	public ResponseEntity<?> transferAmount(@Valid TransferRequest transferRequest) {
+	/**
+	 * Transfers from one account to another.
+	 * @param transferRequest Data of the transfer request.
+	 * @return HTTP response confirming successful transfer.
+	 */
+	public ResponseEntity<?> transferAmount(TransferRequest transferRequest) {
 		Account toAccount = accountService.findByAccountNumber(transferRequest.getToAccNumber()).get();
 		Account fromAccount = accountService.findByAccountNumber(transferRequest.getFromAccNumber()).get();
 		
@@ -441,7 +510,7 @@ public class CustomerController {
 		
 		transferRepository.save(transferRecord);
 		
-		return ResponseEntity.status(200).build();
+		return ResponseEntity.status(HttpStatus.OK).build();
 	}
 	
 	/** NEEDS REVIEW **/
@@ -481,11 +550,4 @@ public class CustomerController {
 		}
 		
 	}
-	
-
-
-	
-
-
-
 }

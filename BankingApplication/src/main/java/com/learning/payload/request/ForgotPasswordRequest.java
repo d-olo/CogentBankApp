@@ -1,7 +1,7 @@
 package com.learning.payload.request;
 
-import javax.validation.constraints.NotBlank;
 
+import javax.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
