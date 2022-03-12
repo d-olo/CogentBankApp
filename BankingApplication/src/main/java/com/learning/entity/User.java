@@ -16,6 +16,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import com.learning.enums.EnabledStatus;
 
@@ -66,5 +67,19 @@ public class User {
 	private String secretAnswer;
 	private String panImage;
 	private String aadharImage;
+	
+	 @Transient
+	    public String getPhotosImagePathPan() {
+	        if (panImage == null || id == null) return null;
+	         
+	        return "/customer-files/" + id + "/" + panImage;
+	    }
+	 
+	 @Transient
+	 public String getPhotosImagePathPanAadhar() {
+		 if (aadharImage == null || id == null) return null;
+		 
+		 return "/customer-files/" + id + "/" + aadharImage;
+	 }
 	
 }

@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import com.learning.entity.Account;
 import com.learning.repo.AccountRepository;
 import com.learning.enums.AccountType;
-import com.learning.repo.AccountRepository;
 import com.learning.service.AccountService;
 
 
@@ -41,6 +40,12 @@ public class AccountServiceImpl implements AccountService {
 	@Override
 	public Optional<AccountType> findByAccountType(AccountType accountType) {
 		return accountRepository.findByAccountType(accountType);
+	}
+
+	@Override
+	public void updateAccount(Account account) {
+		accountRepository.save(account);
+		
 	}
 
 	
