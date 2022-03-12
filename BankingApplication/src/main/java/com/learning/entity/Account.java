@@ -41,7 +41,9 @@ public class Account {
 	private Integer accountNumber;
 	private Double accountBalance;
 	
+	@Enumerated(EnumType.STRING)
 	private EnabledStatus enabledStatus;
+	@Enumerated(EnumType.STRING)
 	private ApprovedStatus approvedStatus;
 	
 	@ManyToOne

@@ -8,5 +8,5 @@ public interface UserService {
 	public User addUser(User user);
 	public Optional<User> getUserById(Integer id);
 	public Optional<User> getUserByUsername(String username);
-	public void updateUser(User user);
+	public User updateUser(User user);
 }

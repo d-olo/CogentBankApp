@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AddAccountRequest {
+	@NotBlank
 	@Enumerated(EnumType.STRING)
 	private AccountType accountType;
 	@NotNull

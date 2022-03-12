@@ -11,4 +11,5 @@ public interface AccountService {
 	public Account findByAccountId(Integer accountId);
 	public Optional<Account> findByAccountNumber(Integer accountNo);
 	public Optional<AccountType> findByAccountType(AccountType accountType);
+	public void updateAccount(Account account);
 }

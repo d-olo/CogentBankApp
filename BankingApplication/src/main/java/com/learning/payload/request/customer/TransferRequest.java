@@ -1,14 +1,21 @@
 package com.learning.payload.request.customer;
 
-import com.learning.entity.User;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 import lombok.Data;
 
 @Data
 public class TransferRequest {
+
+	@NotNull
 	private Integer toAccNumber;
+	@NotNull
 	private Integer fromAccNumber;
+	@NotNull
 	private Double amount;
+	@NotNull
 	private String reason;
-	private User by;
+	@NotBlank
+	private String by;
 }
