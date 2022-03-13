@@ -24,4 +24,5 @@ public class Transfer {
 	private Double amount;
 	private String reason;
 	private User by;
+	private String role;
 }

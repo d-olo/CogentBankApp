@@ -55,13 +55,12 @@ import com.learning.payload.request.customer.AddBeneficiaryRequest;
 import com.learning.payload.request.customer.AuthenticationRequest;
 import com.learning.payload.request.customer.CustomerRegisterRequest;
 import com.learning.payload.request.customer.TransferRequest;
-import com.learning.payload.response.AccountByIdResponse;
-import com.learning.payload.response.AccountListResponse;
-import com.learning.payload.response.AccountResponse;
-import com.learning.payload.response.BeneficiaryListResponse;
 import com.learning.payload.response.GetCustomerResponse;
 import com.learning.payload.response.JwtResponse;
-import com.learning.payload.response.RegisterResponse;
+import com.learning.payload.response.customer.AccountByIdResponse;
+import com.learning.payload.response.customer.AccountListResponse;
+import com.learning.payload.response.customer.BeneficiaryListResponse;
+import com.learning.payload.response.customer.RegisterResponse;
 import com.learning.repo.RoleRepository;
 import com.learning.repo.TransferRepository;
 import com.learning.security.jwt.JwtUtils;
@@ -70,7 +69,7 @@ import com.learning.service.AccountService;
 import com.learning.service.BeneficiaryService;
 import com.learning.service.UserService;
 import com.learning.utils.FileUploadUtil;
-
+import com.learning.payload.response.customer.*;
 
 @RestController
 @RequestMapping("/customer")

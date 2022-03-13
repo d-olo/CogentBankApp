@@ -7,6 +7,8 @@ import javax.validation.constraints.NotNull;
 
 import org.springframework.validation.annotation.Validated;
 
+import com.learning.enums.ApprovedStatus;
+
 import lombok.Data;
 
 @Data
@@ -19,6 +21,6 @@ public class ApproveBeneficiaryRequest {
 	  @NotNull
 	  private Date beneficiaryAddedDate;
 	  @NotBlank
-	  private String approved;
+	  private ApprovedStatus approvedStatus;
 
 }

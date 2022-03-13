@@ -1,5 +1,7 @@
 package com.learning.entity;
 
+import java.sql.Date;
+
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -8,6 +10,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
 import com.learning.enums.AccountType;
 import com.learning.enums.ActiveStatus;
@@ -33,6 +36,9 @@ public class Beneficiary {
 	private ApprovedStatus approvedStatus;
 	@Enumerated(EnumType.STRING)
 	private ActiveStatus activeStatus = ActiveStatus.STATUS_ACTIVE;
+	
+	@NotNull
+	private Date beneficiaryAddedDate;
 	
 	@ManyToOne
 	private User mainUser;
