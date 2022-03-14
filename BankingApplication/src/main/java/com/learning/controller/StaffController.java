@@ -2,12 +2,12 @@ package com.learning.controller;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,12 +19,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.learning.entity.Account;
 import com.learning.entity.Beneficiary;
-import com.learning.entity.Transfer;
 import com.learning.entity.User;
 import com.learning.enums.ApprovedStatus;
 import com.learning.enums.BeneficiaryStatus;
@@ -34,21 +32,18 @@ import com.learning.payload.request.staff.ApproveAccountRequest;
 import com.learning.payload.request.staff.ApproveBeneficiaryRequest;
 import com.learning.payload.request.staff.TransferRequest;
 import com.learning.payload.request.staff.UpdateCustomerStatusRequest;
-import com.learning.payload.response.CustomerResponse;
 import com.learning.payload.response.JwtResponse;
+import com.learning.payload.response.TransferResponse;
 import com.learning.payload.response.customer.AccountApproved;
-import com.learning.payload.response.customer.AccountByIdResponse;
 import com.learning.payload.response.customer.AccountStatementResponse;
 import com.learning.payload.response.customer.CustomerById;
 import com.learning.payload.response.staff.BeneficiaryApproved;
 import com.learning.repo.AccountRepository;
 import com.learning.repo.BeneficiaryRepository;
-import com.learning.repo.TransferRepository;
 import com.learning.repo.UserRepository;
 import com.learning.security.jwt.JwtUtils;
 import com.learning.security.service.UserDetailsImpl;
 import com.learning.service.AccountService;
-import com.learning.service.StaffService;
 
 @RestController
 @RequestMapping("/staff")
@@ -74,9 +69,6 @@ public class StaffController {
 	
 	@Autowired
 	BeneficiaryRepository beneficiaryRepository;
-	
-	@Autowired
-	TransferRepository transferRepository;
 	
 	@Autowired
 	// Utilities for JSON web tokens.
@@ -132,7 +124,7 @@ public class StaffController {
 				.orElseThrow(() -> new NoDataFoundException("Sorry, Customer Not Found")).getFullName());
 		accountResponse.setAccountBalance(account.getAccountBalance());
 		accountResponse.setTransactions(account.getTransactions());
-		return ResponseEntity.status(200).body(accountResponse);
+		return ResponseEntity.status(HttpStatus.OK).body(accountResponse);
 	}
 	
 	@GetMapping("/beneficiary")
@@ -149,7 +141,7 @@ public class StaffController {
 			unapprovedLists.add(unapprovedList);
 		}
 		
-		return ResponseEntity.status(200).body(unapprovedLists);
+		return ResponseEntity.status(HttpStatus.OK).body(unapprovedLists);
 	}
 	
 	@PutMapping("/beneficiary")
@@ -170,7 +162,7 @@ public class StaffController {
 		}
 		userRepository.save(customer);
 		
-		return ResponseEntity.status(200).body(beneficiaryResponse);
+		return ResponseEntity.status(HttpStatus.OK).body(beneficiaryResponse);
 	}
 	
 	@GetMapping("/accounts/approve")
@@ -192,7 +184,7 @@ public class StaffController {
 			
 			unapprovedLists.add(unapprovedList);
 		}
-		return ResponseEntity.status(200).body(unapprovedLists);
+		return ResponseEntity.status(HttpStatus.OK).body(unapprovedLists);
 	}
 	
 	@PutMapping("/accounts/approve")
@@ -213,7 +205,7 @@ public class StaffController {
 		accountRespone.setApproved(account.getApprovedStatus());
 		accountRespone.setStaffUsername(account.getAccountOwner().getUsername());
 	
-		return ResponseEntity.status(200).body(accountRespone);
+		return ResponseEntity.status(HttpStatus.OK).body(accountRespone);
 	}
 	
 	@GetMapping("/customer")
@@ -227,7 +219,7 @@ public class StaffController {
 			customerInfo.setStatus(customer.getEnabledStatus());
 			customersResponse.add(customerInfo);
 		}
-		return ResponseEntity.status(200).body(customersResponse);
+		return ResponseEntity.status(HttpStatus.OK).body(customersResponse);
 	}
 	
 	@PutMapping("/customer")
@@ -237,7 +229,7 @@ public class StaffController {
 				.orElseThrow(() -> new NoDataFoundException("Sorry, Customer Status Not Changed"));
 		customer.setEnabledStatus(request.getStatus());
 		accountRepository.save(customer);
-		return ResponseEntity.status(200).body("Customer Status Changed");
+		return ResponseEntity.status(HttpStatus.OK).body("Customer Status Changed");
 	}
 	
 	@GetMapping("/customer/:{id}")
@@ -250,7 +242,7 @@ public class StaffController {
 		customerResponse.setStatus(customer.getEnabledStatus());
 		customerResponse.setCreated(customer.getDateCreated());
 		
-		return ResponseEntity.status(200).body(customerResponse);
+		return ResponseEntity.status(HttpStatus.OK).body(customerResponse);
 	}
 	
 	@PutMapping("/transfer")
@@ -264,19 +256,16 @@ public class StaffController {
 		fromAccount.setAccountBalance(fromAccount.getAccountBalance() - request.getAmount());
 		toAccount.setAccountBalance(toAccount.getAccountBalance() + request.getAmount());
 		
-		Transfer transferRequest = new Transfer();
-		transferRequest.setFromAccNumber(fromAccount.getAccountNumber());
-		transferRequest.setToAccNumber(toAccount.getAccountNumber());
-		transferRequest.setAmount(request.getAmount());
-		transferRequest.setReason(request.getReason());
-		transferRequest.setRole(request.getRole());
+		TransferResponse transferResponse = new TransferResponse();
+		transferResponse.setFromAccNumber(fromAccount.getAccountNumber());
+		transferResponse.setToAccNumber(toAccount.getAccountNumber());
+		transferResponse.setAmount(request.getAmount());
+		transferResponse.setReason(request.getReason());
 		
 		accountService.updateAccount(fromAccount);
 		accountService.updateAccount(toAccount);
 		
-		transferRepository.save(transferRequest);
-
-		return ResponseEntity.status(200).body("Transfer Complete");
+		return ResponseEntity.status(HttpStatus.OK).body(transferResponse);
 	}
 	
 	
