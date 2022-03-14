@@ -6,6 +6,8 @@ import javax.validation.constraints.NotBlank;
 
 import org.springframework.validation.annotation.Validated;
 
+import com.learning.enums.ApprovedStatus;
+
 import lombok.Data;
 
 @Data
@@ -16,7 +18,7 @@ public class ApproveAccountRequest {
     private String customerName; 
     private Integer accNum; 
     private Date dateCreated; 
-    private String approved; 
+    private ApprovedStatus approved; 
     private String staffUsername; 
 
 }

@@ -3,23 +3,23 @@ package com.learning.payload.request.staff;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
-import org.springframework.validation.annotation.Validated;
-
-import com.learning.enums.ERole;
-import com.learning.enums.EnabledStatus;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-//@Validate
-@AllArgsConstructor
 @NoArgsConstructor
-public class UpdateCustomerStatusRequest {
+@AllArgsConstructor
+public class TransferRequest {
+	
 	@NotNull
-	private Integer customerId;
+	private Integer fromAccNumber;
+	@NotNull
+	private Integer toAccNumber;
+	@NotNull
+	private Double amount;
 	@NotBlank
-	private EnabledStatus status;
-
+	private String reason;
+	@NotBlank
+	private String role;
 }
