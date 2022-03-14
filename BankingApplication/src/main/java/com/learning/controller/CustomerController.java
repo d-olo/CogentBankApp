@@ -37,7 +37,6 @@ import com.learning.entity.Account;
 import com.learning.entity.Beneficiary;
 import com.learning.entity.Role;
 import com.learning.entity.Transaction;
-import com.learning.entity.Transfer;
 import com.learning.entity.User;
 import com.learning.enums.AccountType;
 import com.learning.enums.ApprovedStatus;
@@ -57,19 +56,19 @@ import com.learning.payload.request.customer.CustomerRegisterRequest;
 import com.learning.payload.request.customer.TransferRequest;
 import com.learning.payload.response.GetCustomerResponse;
 import com.learning.payload.response.JwtResponse;
+import com.learning.payload.response.TransferResponse;
 import com.learning.payload.response.customer.AccountByIdResponse;
 import com.learning.payload.response.customer.AccountListResponse;
+import com.learning.payload.response.customer.AccountResponse;
 import com.learning.payload.response.customer.BeneficiaryListResponse;
 import com.learning.payload.response.customer.RegisterResponse;
 import com.learning.repo.RoleRepository;
-import com.learning.repo.TransferRepository;
 import com.learning.security.jwt.JwtUtils;
 import com.learning.security.service.UserDetailsImpl;
 import com.learning.service.AccountService;
 import com.learning.service.BeneficiaryService;
 import com.learning.service.UserService;
 import com.learning.utils.FileUploadUtil;
-import com.learning.payload.response.customer.*;
 
 @RestController
 @RequestMapping("/customer")
@@ -93,9 +92,6 @@ public class CustomerController {
 	@Autowired
 	// Manages database operations for beneficiaries
 	private BeneficiaryService beneficiaryService;
-	@Autowired
-	// Manages access to the transfer repository
-	private TransferRepository transferRepository;
 	@Autowired
 	// Manages authentication
 	AuthenticationManager authenticationManager;
@@ -314,7 +310,7 @@ public class CustomerController {
 		response.setPan(user.getPan());
 		response.setAadhar(user.getAadhar());
 		
-		return ResponseEntity.status(200).body(response);
+		return ResponseEntity.status(HttpStatus.OK).body(response);
 		
 	}
 	
@@ -496,20 +492,17 @@ public class CustomerController {
 		toAccount.setAccountBalance(toAccount.getAccountBalance() + transferRequest.getAmount());
 		fromAccount.setAccountBalance(fromAccount.getAccountBalance() - transferRequest.getAmount());
 		
-		Transfer transferRecord = new Transfer();
-		transferRecord.setFromAccNumber(fromAccount.getAccountNumber());
-		transferRecord.setToAccNumber(toAccount.getAccountNumber());
-		transferRecord.setAmount(transferRequest.getAmount());
-		transferRecord.setReason(transferRequest.getReason());
-		transferRecord.setBy(userService.getUserByUsername(transferRequest.getBy()).get());	// not sure if relationship needed
-														// between Transfer and Customer
+		TransferResponse transferResponse = new TransferResponse();
+		transferResponse.setFromAccNumber(fromAccount.getAccountNumber());
+		transferResponse.setToAccNumber(toAccount.getAccountNumber());
+		transferResponse.setAmount(transferRequest.getAmount());
+		transferResponse.setReason(transferRequest.getReason());
+		transferResponse.setBy(transferRequest.getBy());	
 		
-		accountService.updateAccount(fromAccount);	// not sure if correct
-		accountService.updateAccount(toAccount);	// not sure if correct
+		accountService.updateAccount(fromAccount);
+		accountService.updateAccount(toAccount);	
 		
-		transferRepository.save(transferRecord);
-		
-		return ResponseEntity.status(HttpStatus.OK).build();
+		return ResponseEntity.status(HttpStatus.OK).body(transferResponse);
 	}
 	
 	/** NEEDS REVIEW **/
@@ -522,7 +515,7 @@ public class CustomerController {
 			&& user.getSecretQuestion().equals(forgotPasswordRequest.getSecretQuestion())
 			&& user.getSecretAnswer().equals(forgotPasswordRequest.getSecretAnswer())) {
 			
-			return ResponseEntity.status(200).body("Details validated");
+			return ResponseEntity.status(HttpStatus.OK).body("Details validated");
 			
 			
 		} else {
@@ -543,7 +536,7 @@ public class CustomerController {
 		
 			userService.updateUser(user);
 		
-			return ResponseEntity.status(200).body("New password updated");
+			return ResponseEntity.status(HttpStatus.OK).body("New password updated");
 		} else {
 			throw new OperationFailedException("Sorry password not updated");
 		}
