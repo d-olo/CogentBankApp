@@ -8,7 +8,7 @@ import com.learning.enums.ApprovedStatus;
 import lombok.Data;
 
 @Data
-public class AccountResponse {
+public class AddAccountResponse {
 	private AccountType accountType;
 	private Double accountBalance;
 	private ApprovedStatus approvedStatus;

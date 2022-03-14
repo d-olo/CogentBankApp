@@ -5,17 +5,21 @@ import javax.validation.constraints.NotBlank;
 import org.springframework.validation.annotation.Validated;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Validated
 /**
- * Parsed JSON request body for user login.
+ * The request body for customer registration.
  * @author Dionel Olo
- * @since Mar 9, 2022
+ * @since Mar 8, 2022
  */
-public class AuthenticationRequest {
+public class RegisterCustomerRequest {
 	@NotBlank
 	private String username;
 	@NotBlank
+	private String fullName;
+	@NotBlank
 	private String password;
+	
 }

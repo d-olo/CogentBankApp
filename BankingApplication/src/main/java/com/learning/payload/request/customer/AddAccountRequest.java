@@ -22,5 +22,5 @@ public class AddAccountRequest {
 	@NotNull
 	private Double accountBalance;
 	@NotBlank
-	private ApprovedStatus approvedStatus = ApprovedStatus.STATUS_NOT_APPROVED;
+	private String approvedStatus = "no";
 }

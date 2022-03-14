@@ -6,10 +6,10 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,21 +47,21 @@ import com.learning.exception.EnumNotFoundException;
 import com.learning.exception.IdNotFoundException;
 import com.learning.exception.NoDataFoundException;
 import com.learning.exception.OperationFailedException;
+import com.learning.payload.request.AuthenticationRequest;
 import com.learning.payload.request.ForgotPasswordRequest;
 import com.learning.payload.request.UpdateCustomerRequest;
 import com.learning.payload.request.customer.AddAccountRequest;
 import com.learning.payload.request.customer.AddBeneficiaryRequest;
-import com.learning.payload.request.customer.AuthenticationRequest;
-import com.learning.payload.request.customer.CustomerRegisterRequest;
+import com.learning.payload.request.customer.RegisterCustomerRequest;
 import com.learning.payload.request.customer.TransferRequest;
 import com.learning.payload.response.GetCustomerResponse;
 import com.learning.payload.response.JwtResponse;
 import com.learning.payload.response.TransferResponse;
 import com.learning.payload.response.customer.AccountByIdResponse;
-import com.learning.payload.response.customer.AccountListResponse;
-import com.learning.payload.response.customer.AccountResponse;
+import com.learning.payload.response.customer.AddAccountResponse;
 import com.learning.payload.response.customer.BeneficiaryListResponse;
-import com.learning.payload.response.customer.RegisterResponse;
+import com.learning.payload.response.customer.CustomerRegisterResponse;
+import com.learning.payload.response.customer.GetAccountResponse;
 import com.learning.repo.RoleRepository;
 import com.learning.security.jwt.JwtUtils;
 import com.learning.security.service.UserDetailsImpl;
@@ -103,14 +103,14 @@ public class CustomerController {
 	JwtUtils jwtUtils;
 	
 	
-	@PostMapping("/register")
 	/**
 	 * Registers a new customer.
 	 * @param request A request entity containing customer information.
 	 * @return An HTTP response containing the customer added to the database.
 	 */
+	@PostMapping("/register")
 	public ResponseEntity<?> register(
-			@Valid @RequestBody CustomerRegisterRequest request) {
+			@Valid @RequestBody RegisterCustomerRequest request) {
 		
 		// Creating new user.
 		User user = new User();
@@ -135,7 +135,7 @@ public class CustomerController {
 		// Adding user to DB.
 		User regUser = userService.addUser(user);
 		
-		RegisterResponse registerResponse = new RegisterResponse();
+		CustomerRegisterResponse registerResponse = new CustomerRegisterResponse();
 		registerResponse.setId(regUser.getId());
 		registerResponse.setUsername(regUser.getUsername());
 		registerResponse.setFullName(regUser.getFullName());
@@ -145,13 +145,12 @@ public class CustomerController {
 	}
 	
 	
-	@PostMapping("/authenticate")
-
 	/**
 	 * Given a username and password, authenticates a user.
 	 * @param loginRequest
 	 * @return An HTTP response containing a JSON web token.
 	 */
+	@PostMapping("/authenticate")
 	public ResponseEntity<?> authenticate
 		(@Valid @RequestBody AuthenticationRequest authRequest) {
 		
@@ -179,54 +178,51 @@ public class CustomerController {
 	
 	}
 	
-	/** NEEDS REVIEW **/
-	@PostMapping("/{id}/account")
-	public ResponseEntity<?> addAccount(@Valid @PathVariable Integer id, AddAccountRequest accountRequest) {
-		User user = userService.getUserById(id).orElseThrow(()->new IdNotFoundException("Sorry, Customer with ID: " + id + " not found"));
 	/**
 	 * Creates a new account.
 	 * @param id Internal ID of the customer to create an account for.
 	 * @param accountRequest The details of the account to be created
 	 * @return An HTTP response containing the created account.
 	 */
+	@Transactional
+	@PostMapping("/{id}/account")
+	public ResponseEntity<?> addAccount(
+			@Valid @PathVariable Integer id, AddAccountRequest accountRequest) {
+		User user = userService.getUserById(id).orElseThrow(
+				()->new IdNotFoundException(
+						"Sorry, Customer with ID: " + id + " not found.")
+				);
+		
 		Account account = new Account();
 		
 		switch (accountRequest.getAccountType().name()) {
-		case "savings":
-			account.setAccountType(
-					accountService.findByAccountType(AccountType.ACCOUNT_SAVINGS)
-			.orElseThrow(() -> new RuntimeException("Account Type error")));
+		case "ACCOUNT_SAVINGS":
+			account.setAccountType(AccountType.ACCOUNT_SAVINGS);
 			break;
-		case "checking":
-			account.setAccountType(
-					accountService.findByAccountType(AccountType.ACCOUNT_CHECKING)
-			.orElseThrow(() -> new RuntimeException("Account Type error")));
+		case "ACCOUNT_CHECKING":
+			account.setAccountType(AccountType.ACCOUNT_CHECKING);
 			break;
-
 		default:
 			break;
 		}
 		
-		// Generate random number to set as Acct. No
-		Random ran = new Random();
-     
-		account.setAccountNumber(ran.nextInt(9999) + 1000);
 		account.setAccountBalance(accountRequest.getAccountBalance());
-		account.setApprovedStatus(accountRequest.getApprovedStatus());
+		
+		// All accounts are not approved on creation.
+		account.setApprovedStatus(ApprovedStatus.STATUS_NOT_APPROVED);
 		account.setAccountOwner(user);
 		account.setDateCreated(Date.valueOf(LocalDate.now()));
 		account.setTransactions(new HashSet<Transaction>());
+		account.setEnabledStatus(EnabledStatus.STATUS_ENABLED);
+		Account createdAccount = accountService.addAccount(account);
 		
-		accountService.addAccount(account);
-		
-		user.getAccounts().add(account);
-		userService.updateUser(user);	// not sure if correct way or necessary
-		
-		AccountResponse accountResponse = new AccountResponse();
-		accountResponse.setAccountType(account.getAccountType());
-		accountResponse.setAccountBalance(account.getAccountBalance());
-		accountResponse.setDateCreated(account.getDateCreated());
-		accountResponse.setCustomerId(account.getAccountOwner().getId());
+		// Build the HTTP response.
+		AddAccountResponse accountResponse = new AddAccountResponse();
+		accountResponse.setAccountType(createdAccount.getAccountType());
+		accountResponse.setAccountBalance(createdAccount.getAccountBalance());
+		accountResponse.setDateCreated(createdAccount.getDateCreated());
+		accountResponse.setCustomerId(createdAccount.getAccountOwner().getId());
+		accountResponse.setApprovedStatus(createdAccount.getApprovedStatus());
 		
 		return ResponseEntity.status(HttpStatus.OK).body(accountResponse);
 	}
@@ -235,29 +231,31 @@ public class CustomerController {
 	@PutMapping("/{id}/account/{accountNo}")
 	@PreAuthorize("hasRole('STAFF')")
 	/**
-	 * A method for staff members to approve a certain account of a customer.
+	 * A method for staff members to approve a customer's account.
 	 * @param id The customer whose ID to search.
 	 * @param accountNumber The account whose ID to approve.
 	 * @return An HTTP response containing the approved account.
 	 */
 	public ResponseEntity<?> approveAccount(
-			@PathVariable("id") Integer id, @PathVariable("accountNo") Integer accountNumber) {
+			@PathVariable("id") Integer id, 
+			@PathVariable("accountNo") Integer accountNumber) {
+		
 		User user = userService.getUserById(id).orElseThrow(
-				()->new RuntimeException("Sorry, Customer with ID: " + id + " not found"));
+				()->new RuntimeException("Sorry, Customer with ID: " + id + " not found")
+				);
 		Account account = null;
 		
 		for(Account a : user.getAccounts()) {
-			if(a.getAccountNumber() == accountNumber) {
-				account = accountService.findByAccountNumber(
-						a.getAccountId()).orElseThrow(()-> new RuntimeException("Account not found"));
+			if(a.getAccountId() == accountNumber) {
+				account = accountService.findByAccountId(
+						a.getAccountId()).orElseThrow(
+								()-> new RuntimeException("Account not found"));
 				break;
 			}
 		}
-		
 		account.setApprovedStatus(ApprovedStatus.STATUS_APPROVED);
 		accountService.approveAccount(account);
 		return ResponseEntity.status(HttpStatus.OK).body(account);
-		
 	}
 	
 	/** COMPLETED **/
@@ -268,27 +266,24 @@ public class CustomerController {
 	 * @return An HTTP response containing the list of accounts.
 	 */
 	public ResponseEntity<?> getAllAccounts(@PathVariable("id") Integer id) {
+		
 		User user = userService.getUserById(id).orElseThrow(
-				()->new RuntimeException("Sorry, Customer with ID: " + id + " not found"));
+				()->new NoDataFoundException("data not available")
+				);
 		
-		Set<Account> accounts = new HashSet<>();
-		
-		user.getAccounts().forEach(e-> {
-			accounts.add(e);
-		});
-		
-		Set<AccountListResponse> response = new HashSet<>();
+		// Retrieve the user's accounts.
+		Set<Account> accounts = user.getAccounts();
+		Set<GetAccountResponse> response = new HashSet<GetAccountResponse>();
 		
 		accounts.forEach(e-> {
-			AccountListResponse accountList = new AccountListResponse();
-			accountList.setAccountNumber(e.getAccountNumber());
+			GetAccountResponse accountList = new GetAccountResponse();
 			accountList.setAccountType(e.getAccountType());
 			accountList.setAccountBalance(e.getAccountBalance());
 			accountList.setApprovedStatus(e.getApprovedStatus());
 			response.add(accountList);
 		});
 		
-		return ResponseEntity.ok(response);
+		return ResponseEntity.status(HttpStatus.OK).body(response);
 	
 	}
 	
@@ -300,7 +295,9 @@ public class CustomerController {
 	 * @return HTTP response containing the user.
 	 */
 	public ResponseEntity<?> getUserById(@PathVariable("id") Integer id) {
-		User user = userService.getUserById(id).orElseThrow(()->new IdNotFoundException("Sorry, Customer with ID: " + id + " not found"));
+		User user = userService.getUserById(id).orElseThrow(
+				()->new IdNotFoundException("Sorry, Customer with ID: " + id + " not found")
+				);
 		
 		GetCustomerResponse response = new GetCustomerResponse();
 		
@@ -365,14 +362,14 @@ public class CustomerController {
 		
 		for(Account a : user.getAccounts()) {
 			if(a.getAccountId() == accountId) {
-				account = accountService.findByAccountId(accountId);
+				account = accountService.findByAccountId(accountId).orElseThrow(
+						()-> new RuntimeException("Account not found"));
 				break;
 			}
 		}
 		
 		AccountByIdResponse response = new AccountByIdResponse();
 		
-		response.setAccountNumber(account.getAccountNumber());
 		response.setAccountType(account.getAccountType().name());
 		response.setAccountBalance(account.getAccountBalance());
 		response.setEnabledStatus(account.getEnabledStatus());
@@ -486,15 +483,19 @@ public class CustomerController {
 	 * @return HTTP response confirming successful transfer.
 	 */
 	public ResponseEntity<?> transferAmount(TransferRequest transferRequest) {
-		Account toAccount = accountService.findByAccountNumber(transferRequest.getToAccNumber()).get();
-		Account fromAccount = accountService.findByAccountNumber(transferRequest.getFromAccNumber()).get();
+		Account toAccount = accountService.findByAccountId(transferRequest.getToAccNumber())
+				.orElseThrow(
+						()-> new RuntimeException("Account not found")
+				);
+		Account fromAccount = accountService.findByAccountId(transferRequest.getFromAccNumber())
+				.orElseThrow(
+						()-> new RuntimeException("Account not found")
+				);
 		
 		toAccount.setAccountBalance(toAccount.getAccountBalance() + transferRequest.getAmount());
 		fromAccount.setAccountBalance(fromAccount.getAccountBalance() - transferRequest.getAmount());
 		
 		TransferResponse transferResponse = new TransferResponse();
-		transferResponse.setFromAccNumber(fromAccount.getAccountNumber());
-		transferResponse.setToAccNumber(toAccount.getAccountNumber());
 		transferResponse.setAmount(transferRequest.getAmount());
 		transferResponse.setReason(transferRequest.getReason());
 		transferResponse.setBy(transferRequest.getBy());	

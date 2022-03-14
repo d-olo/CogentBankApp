@@ -22,7 +22,9 @@ import com.learning.enums.EnabledStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table
@@ -43,21 +45,29 @@ public class User {
 	private String fullName;
 	private String password;
 	
-	@ManyToMany(fetch = FetchType.LAZY)
+	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(name = "user_roles",
 	joinColumns = @JoinColumn(name = "user_id"),
 	inverseJoinColumns = @JoinColumn(name = "role_id"))
+	@EqualsAndHashCode.Exclude
+	@ToString.Exclude
 	private Set<Role> roles;
 	
 	@OneToMany(mappedBy = "accountOwner",
 			cascade = CascadeType.ALL,
-			fetch = FetchType.LAZY)
+			fetch = FetchType.EAGER)
+	@EqualsAndHashCode.Exclude
+	@ToString.Exclude
 	private Set<Account> accounts;
 	
 	@Enumerated(EnumType.STRING)
 	private EnabledStatus enabledStatus;
 	
-	@OneToMany(mappedBy = "mainUser", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "mainUser", 
+			cascade = CascadeType.ALL, 
+			fetch = FetchType.EAGER)
+	@EqualsAndHashCode.Exclude
+	@ToString.Exclude
 	private Set<Beneficiary> beneficiaries;
 	
 	private String phone;

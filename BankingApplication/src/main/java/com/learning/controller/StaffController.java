@@ -27,7 +27,7 @@ import com.learning.entity.User;
 import com.learning.enums.ApprovedStatus;
 import com.learning.enums.BeneficiaryStatus;
 import com.learning.exception.NoDataFoundException;
-import com.learning.payload.request.customer.AuthenticationRequest;
+import com.learning.payload.request.AuthenticationRequest;
 import com.learning.payload.request.staff.ApproveAccountRequest;
 import com.learning.payload.request.staff.ApproveBeneficiaryRequest;
 import com.learning.payload.request.staff.TransferRequest;
@@ -113,11 +113,11 @@ public class StaffController {
 	public ResponseEntity<?> getAccountByAccNum
 		(@PathVariable("accountNum") Integer accountNum) {
 		Account account = accountService
-				.findByAccountNumber(accountNum)
+				.findByAccountId(accountNum)
 				.orElseThrow(() -> new NoDataFoundException("Sorry, Account Not Found"));
 		
 		AccountStatementResponse accountResponse = new AccountStatementResponse();
-		accountResponse.setAccountNumber(account.getAccountNumber());
+		accountResponse.setAccountNumber(account.getAccountId());
 //		accountResponse.setCustomerName(account.getAccountOwner().getFullName());
 		accountResponse.setCustomerName(userRepository
 				.findById(account.getAccountOwner().getId())
@@ -178,7 +178,7 @@ public class StaffController {
 					.findById(account.getAccountOwner().getId())
 					.orElseThrow(() -> new NoDataFoundException("Sorry, Customer Not Found"))
 					.getFullName());
-			unapprovedList.setAccountNumber(account.getAccountNumber());
+			unapprovedList.setAccountNumber(account.getAccountId());
 			unapprovedList.setDateCreated(account.getDateCreated());
 			unapprovedList.setApprovedStatus(account.getApprovedStatus());
 			
@@ -200,7 +200,7 @@ public class StaffController {
 //				.findById(account.getAccountOwner().getId())
 //				.orElseThrow(() -> new NoDataFoundException("Sorry, Customer Not Found"))
 //				.getFullName());
-		accountRespone.setAccNum(account.getAccountNumber());
+		accountRespone.setAccNum(account.getAccountId());
 		accountRespone.setDateCreated(account.getDateCreated());
 		accountRespone.setApproved(account.getApprovedStatus());
 		accountRespone.setStaffUsername(account.getAccountOwner().getUsername());
@@ -248,17 +248,17 @@ public class StaffController {
 	@PutMapping("/transfer")
 	public ResponseEntity<?> transfer
 	(@Valid @RequestBody TransferRequest request) {
-		Account fromAccount = accountService.findByAccountNumber(request.getFromAccNumber())
+		Account fromAccount = accountService.findByAccountId(request.getFromAccNumber())
 				.orElseThrow(() -> new NoDataFoundException("From Account Number Not Vaild"));
-		Account toAccount = accountService.findByAccountNumber(request.getToAccNumber())
+		Account toAccount = accountService.findByAccountId(request.getToAccNumber())
 				.orElseThrow(() -> new NoDataFoundException("To Account Number Not Vaild"));
 		
 		fromAccount.setAccountBalance(fromAccount.getAccountBalance() - request.getAmount());
 		toAccount.setAccountBalance(toAccount.getAccountBalance() + request.getAmount());
 		
 		TransferResponse transferResponse = new TransferResponse();
-		transferResponse.setFromAccNumber(fromAccount.getAccountNumber());
-		transferResponse.setToAccNumber(toAccount.getAccountNumber());
+		transferResponse.setFromAccNumber(fromAccount.getAccountId());
+		transferResponse.setToAccNumber(toAccount.getAccountId());
 		transferResponse.setAmount(request.getAmount());
 		transferResponse.setReason(request.getReason());
 		
