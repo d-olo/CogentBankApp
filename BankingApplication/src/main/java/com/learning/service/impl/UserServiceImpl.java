@@ -1,11 +1,13 @@
 package com.learning.service.impl;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.learning.entity.User;
+import com.learning.enums.ERole;
 import com.learning.repo.UserRepository;
 import com.learning.service.UserService;
 
@@ -33,6 +35,10 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public User updateUser(User user) {
 		return userRepository.save(user);
+	}
+
+	public List<User> findAllByRoleName(ERole role) {
+		return userRepository.findAllByRole(role);
 	}
 
 
