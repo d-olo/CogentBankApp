@@ -405,10 +405,7 @@ public class CustomerController {
 		beneficiary.setAccountType(beneficiaryRequest.getAccountType());
 		beneficiary.setApprovedStatus(beneficiaryRequest.getApprovedStatus());
 		beneficiary.setMainUser(user);
-		
-		user.getBeneficiaries().add(beneficiary);
-		
-		userService.updateUser(user);	// not sure if correct way or necessary
+		beneficiary.setBeneficiaryAddedDate(Date.valueOf(LocalDate.now()));
 		
 		beneficiaryService.addBeneficiary(beneficiary);
 		

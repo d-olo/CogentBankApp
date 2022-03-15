@@ -13,7 +13,10 @@ import com.learning.controller.CustomerController;
 import com.learning.enums.AccountType;
 import com.learning.enums.ApprovedStatus;
 import com.learning.payload.request.customer.AddAccountRequest;
+import com.learning.payload.request.customer.AddBeneficiaryRequest;
 import com.learning.payload.request.customer.RegisterCustomerRequest;
+import com.learning.payload.response.GetCustomerResponse;
+import com.learning.payload.response.customer.AccountByIdResponse;
 import com.learning.payload.response.customer.AddAccountResponse;
 import com.learning.payload.response.customer.CustomerRegisterResponse;
 import com.learning.payload.response.customer.GetAccountResponse;
@@ -61,6 +64,29 @@ class CustomerControllerTests {
 		Set<GetAccountResponse> response = (Set<GetAccountResponse>) customerController.getAllAccounts(1)
 				.getBody();
 		assertNotNull(response);
+	}
+	
+	@Test
+	void testGetUserById() {
+		GetCustomerResponse response = (GetCustomerResponse) customerController.getUserById(1).getBody();
+		assertNotNull(response);
+		assertEquals("Renko Usami", response.getFullName());
+	}
+	
+	@Test
+	void testGetAccountById() {
+		AccountByIdResponse response = (AccountByIdResponse) customerController.getAccountById(1, 12).getBody();
+		assertNotNull(response);
+		assertEquals(200.0, response.getAccountBalance());
+	}
+	
+	@Test
+	void testAddBeneficiary() {
+		AddBeneficiaryRequest request = new AddBeneficiaryRequest();
+		request.setAccountNumber(12);
+		request.setAccountType(AccountType.ACCOUNT_SAVINGS);
+		
+		customerController.addBeneficiary(1, request);
 	}
 
 }

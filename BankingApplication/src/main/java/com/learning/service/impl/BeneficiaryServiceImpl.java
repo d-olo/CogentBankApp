@@ -1,5 +1,6 @@
 package com.learning.service.impl;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.learning.entity.Beneficiary;
@@ -9,6 +10,7 @@ import com.learning.service.BeneficiaryService;
 @Service
 public class BeneficiaryServiceImpl implements BeneficiaryService {
 
+	@Autowired
 	private BeneficiaryRepository beneficiaryRepository;
 	
 	@Override
