@@ -38,7 +38,7 @@ public class Account {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer accountId;
-	private Integer accountNumber;
+	
 	private Double accountBalance;
 	
 	@Enumerated(EnumType.STRING)
@@ -48,6 +48,7 @@ public class Account {
 	
 	@ManyToOne
 	private User accountOwner;
+	
 	@Enumerated(EnumType.STRING)
 	private AccountType accountType;
 	

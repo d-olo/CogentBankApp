@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
  * @author Dionel Olo
  * @since Mar 8, 2022
  */
-public class RegisterResponse {
+public class CustomerRegisterResponse {
 	private Integer id;
 	private String username;
 	private String fullName;

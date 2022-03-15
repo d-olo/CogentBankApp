@@ -1,14 +1,17 @@
 package com.learning.service.impl;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.learning.entity.Account;
-import com.learning.repo.AccountRepository;
+import com.learning.entity.User;
 import com.learning.enums.AccountType;
+import com.learning.repo.AccountRepository;
 import com.learning.service.AccountService;
+
 
 
 @Service
@@ -28,13 +31,8 @@ public class AccountServiceImpl implements AccountService {
 	}
 	
 	@Override
-	public Account findByAccountId(Integer accountId) {
-		return accountRepository.getById(accountId);
-	}
-	
-	@Override
-	public Optional<Account> findByAccountNumber(Integer accountNo) {
-		return accountRepository.findByAccountNumber(accountNo);
+	public Optional<Account> findByAccountId(Integer accountId) {
+		return accountRepository.findById(accountId);
 	}
 	
 	@Override
