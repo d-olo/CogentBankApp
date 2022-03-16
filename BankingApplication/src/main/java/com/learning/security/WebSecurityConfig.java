@@ -71,8 +71,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		http.cors().and().csrf().disable()
 		.exceptionHandling().authenticationEntryPoint(unauthorizedHandler)
 		.and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-		.and().authorizeRequests().antMatchers("/api/customer/register").permitAll()
-		.antMatchers("/api/customer/authenticate").permitAll();	// support for register and login
+		.and().authorizeRequests().antMatchers("api/customer/register").permitAll()
+		.antMatchers("api/customer/authenticate").permitAll()
+		.and().csrf().disable();	// support for register and login
 		
 		
 		// for handling filters
