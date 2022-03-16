@@ -71,9 +71,9 @@ import com.learning.service.BeneficiaryService;
 import com.learning.service.UserService;
 import com.learning.utils.FileUploadUtil;
 
-@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("customer")
+@RequestMapping("/customer")
+@CrossOrigin(origins = "http://localhost:4200")
 /**
  * Handler for the customer API.
  * @author Dionel Olo, Oliver Pagalanan
