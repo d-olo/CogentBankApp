@@ -13,5 +13,4 @@ import com.learning.enums.ERole;
 public interface UserRepository extends JpaRepository<User, Integer> {
 	public Optional<User> findByUsername(String username);
 
-	public List<User> findAllByRole(ERole role);
 }

@@ -1,11 +1,13 @@
 package com.learning.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.learning.entity.Role;
 import com.learning.entity.User;
 import com.learning.enums.ERole;
 import com.learning.repo.UserRepository;
@@ -37,8 +39,20 @@ public class UserServiceImpl implements UserService {
 		return userRepository.save(user);
 	}
 
-	public List<User> findAllByRoleName(ERole role) {
-		return userRepository.findAllByRole(role);
+	@Override
+	public List<User> findAllByRoleName(ERole roleName) {
+		List<User> allUsers = userRepository.findAll();
+		List<User> usersOfRole = new ArrayList<User>();
+		
+		for(User user: allUsers) {
+			for(Role role : user.getRoles()) {
+				if(role.getRoleName() == roleName) {
+					usersOfRole.add(user);
+				}
+			}
+		}
+		
+		return usersOfRole;
 	}
 
 
