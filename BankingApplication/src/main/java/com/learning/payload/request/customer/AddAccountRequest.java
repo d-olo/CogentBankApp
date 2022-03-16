@@ -17,10 +17,17 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AddAccountRequest {
 	@NotBlank
+
 	//@Enumerated(EnumType.STRING)
+
 	private String accountType;
 	@NotNull
 	private Double accountBalance;
+
 	//@NotBlank
 	//private String approvedStatus = "no";
+
+	@NotBlank
+	private String approvedStatus;
+
 }
