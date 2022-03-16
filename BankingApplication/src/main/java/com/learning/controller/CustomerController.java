@@ -189,7 +189,7 @@ public class CustomerController {
 	@Transactional
 	@PostMapping("/{id}/account")
 	public ResponseEntity<?> addAccount(
-			@Valid @PathVariable Integer id, AddAccountRequest accountRequest) {
+			@Valid @PathVariable Integer id, @RequestBody AddAccountRequest accountRequest) {
 		User user = userService.getUserById(id).orElseThrow(
 				()->new IdNotFoundException(
 						"Sorry, Customer with ID: " + id + " not found.")
@@ -197,11 +197,11 @@ public class CustomerController {
 		
 		Account account = new Account();
 		
-		switch (accountRequest.getAccountType().name()) {
-		case "ACCOUNT_SAVINGS":
+		switch (accountRequest.getAccountType()) {
+		case "SB":
 			account.setAccountType(AccountType.ACCOUNT_SAVINGS);
 			break;
-		case "ACCOUNT_CHECKING":
+		case "CA":
 			account.setAccountType(AccountType.ACCOUNT_CHECKING);
 			break;
 		default:
