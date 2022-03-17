@@ -189,15 +189,13 @@ public class CustomerController {
 	@Transactional
 	@PostMapping("/{id}/account")
 	//@PreAuthorize("hasRole('CUSTOMER')")
+	@CrossOrigin("http://localhost:4200")
 	public ResponseEntity<?> addAccount(
 			@Valid @PathVariable Integer id, @RequestBody AddAccountRequest accountRequest) {
 		User user = userService.getUserById(id).orElseThrow(
 				()->new IdNotFoundException(
 						"Sorry, Customer with ID: " + id + " not found.")
 				);
-		
-		//System.out.println(accountRequest.getAccountType());
-		//System.out.println(accountRequest.getAccountBalance());
 		
 		Account account = new Account();
 		
@@ -236,6 +234,7 @@ public class CustomerController {
 	/** COMPLETED **/
 	@PutMapping("/{id}/account/{accountNo}")
 	//@PreAuthorize("hasRole('STAFF')")
+	@CrossOrigin(origins = "http://localhost:4200")
 	/**
 	 * A method for staff members to approve a customer's account.
 	 * @param id The customer whose ID to search.
@@ -267,6 +266,7 @@ public class CustomerController {
 	/** COMPLETED **/
 	@GetMapping("/{id}/account")
 	//@PreAuthorize("hasRole('CUSTOMER')")
+	@CrossOrigin(origins = "http://localhost:4200")
 	/**
 	 * Gets all accounts from a certain user.
 	 * @param id The user whose accounts to check.
@@ -297,6 +297,7 @@ public class CustomerController {
 	/** COMPLETED **/
 	@GetMapping("/{id}")
 	//@PreAuthorize("hasRole('CUSTOMER')")
+	@CrossOrigin(origins = "http://localhost:4200")
 	/**
 	 * Gets a user by ID.
 	 * @param id ID to search.
@@ -323,6 +324,7 @@ public class CustomerController {
 	/** NEEDS REVIEW **/
 	@PutMapping("{id}")
 	//@PreAuthorize("hasRole('CUSTOMER')")
+	@CrossOrigin(origins = "http://localhost:4200")
 	public ResponseEntity<?> updateUser(@Valid @PathVariable("id") Integer id, UpdateCustomerRequest updateCustomerRequest, 
 			@RequestParam("image") MultipartFile multipartFilePan, @RequestParam("image") MultipartFile multipartFileAadhar) 
 	throws IOException {
@@ -363,6 +365,7 @@ public class CustomerController {
 	 */
 	@GetMapping("/{id}/account/{accountId}")
 	//@PreAuthorize("hasRole('CUSTOMER')")
+	@CrossOrigin(origins = "http://localhost:4200")
 	public ResponseEntity<?> getAccountById(
 			@PathVariable("id") Integer id, @PathVariable("accountId") Integer accountId) {
 		User user = userService.getUserById(id).orElseThrow(
@@ -399,22 +402,35 @@ public class CustomerController {
 	/** NEEDS REVIEW **/
 	@PostMapping("{id}/beneficiary")
 	//@PreAuthorize("hasRole('CUSTOMER')")
+	@CrossOrigin(origins = "http://localhost:4200")
 	/**
 	 * Adds a beneficiary to a user.
 	 * @param id The ID of the user to modify.
 	 * @param beneficiaryRequest The data of the beneficiary to add.
 	 * @return HTTP response confirming the beneficiary addition.
 	 */
-	public ResponseEntity<?> addBeneficiary(
-			@PathVariable("id") Integer id, AddBeneficiaryRequest beneficiaryRequest) {
+	public ResponseEntity<?> addBeneficiary(@Valid
+			@PathVariable("id") Integer id, @RequestBody AddBeneficiaryRequest beneficiaryRequest) {
 		User user = userService.getUserById(id).orElseThrow(
 				()-> new RuntimeException("Sorry, Customer with ID: " + id + " not found"));
 		
 		Beneficiary beneficiary = new Beneficiary();
 		
 		beneficiary.setAccountNumber(beneficiaryRequest.getAccountNumber());
-		beneficiary.setAccountType(beneficiaryRequest.getAccountType());
-		beneficiary.setApprovedStatus(beneficiaryRequest.getApprovedStatus());
+		
+		switch (beneficiaryRequest.getAccountType()) {
+		case "SB":
+			beneficiary.setAccountType(AccountType.ACCOUNT_SAVINGS);
+			break;
+		case "CA":
+			beneficiary.setAccountType(AccountType.ACCOUNT_CHECKING);
+			break;
+		default:
+			break;
+		}
+		
+		
+		beneficiary.setApprovedStatus(ApprovedStatus.STATUS_NOT_APPROVED);
 		beneficiary.setMainUser(user);
 		beneficiary.setBeneficiaryAddedDate(Date.valueOf(LocalDate.now()));
 		
@@ -428,6 +444,7 @@ public class CustomerController {
 	/** COMPLETED **/
 	@GetMapping("{id}/beneficiary")
 	//@PreAuthorize("hasRole('CUSTOMER')")
+	@CrossOrigin(origins = "http://localhost:4200")
 	/**
 	 * Gets all beneficiaries of a user.
 	 * @param id The user to check.
@@ -465,6 +482,7 @@ public class CustomerController {
 	/** COMPLETED **/
 	@DeleteMapping("{id}/beneficiary/{beneficiaryId}")
 	//@PreAuthorize("hasRole('CUSTOMER')")
+	@CrossOrigin(origins = "http://localhost:4200")
 	/**
 	 * Removes a beneficiary from a customer. 
 	 * @param id The customer to search.
@@ -486,6 +504,7 @@ public class CustomerController {
 	/** NEEDS REVIEW **/
 	@PutMapping("/transfer")
 	//@PreAuthorize("hasRole('CUSTOMER')")
+	@CrossOrigin(origins = "http://localhost:4200")
 	/**
 	 * Transfers from one account to another.
 	 * @param transferRequest Data of the transfer request.
@@ -518,6 +537,7 @@ public class CustomerController {
 	/** NEEDS REVIEW **/
 	@GetMapping("{username}/forgot/{question}/{answer}")
 	//@PreAuthorize("hasRole('CUSTOMER')")
+	@CrossOrigin(origins = "http://localhost:4200")
 	public ResponseEntity<?> forgotPassword(@Valid @PathVariable("username") String username, @PathVariable("question") String question, @PathVariable("answer") String answer ) {
 		User user = userService.getUserByUsername(username).get();
 		
@@ -538,6 +558,7 @@ public class CustomerController {
 	/** NEEDS REVIEW **/
 	@PutMapping("/{username}/forgot")
 	//@PreAuthorize("hasRole('CUSTOMER')")
+	@CrossOrigin(origins = "http://localhost:4200")
 	public ResponseEntity<?> newPassword(@Valid @PathVariable("username") String username, AuthenticationRequest authRequest) {
 		User user = userService.getUserByUsername(username).get();
 		
