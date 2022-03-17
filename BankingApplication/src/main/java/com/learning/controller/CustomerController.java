@@ -325,8 +325,7 @@ public class CustomerController {
 	@PutMapping("{id}")
 	//@PreAuthorize("hasRole('CUSTOMER')")
 	@CrossOrigin(origins = "http://localhost:4200")
-	public ResponseEntity<?> updateUser(@Valid @PathVariable("id") Integer id, UpdateCustomerRequest updateCustomerRequest, 
-			@RequestParam("image") MultipartFile multipartFilePan, @RequestParam("image") MultipartFile multipartFileAadhar) 
+	public ResponseEntity<?> updateUser(@Valid @PathVariable("id") Integer id, @RequestBody UpdateCustomerRequest updateCustomerRequest ) 
 	throws IOException {
 		User user = userService.getUserById(id).orElseThrow(()->new IdNotFoundException("Sorry, Customer with ID: " + id + " not found"));
 		
@@ -339,8 +338,8 @@ public class CustomerController {
 		
 		/* Not sure if correct way to accept image files from input */
 		
-		String panImage = StringUtils.cleanPath(multipartFilePan.getOriginalFilename());
-		String aadharImage = StringUtils.cleanPath(multipartFileAadhar.getOriginalFilename());
+		String panImage = StringUtils.cleanPath(updateCustomerRequest.getMultipartFilePan().getOriginalFilename());
+		String aadharImage = StringUtils.cleanPath(updateCustomerRequest.getMultipartFileAadhar().getOriginalFilename());
 		
 		user.setPanImage(panImage);	
 		user.setAadharImage(aadharImage);	
@@ -349,8 +348,8 @@ public class CustomerController {
 		
 		String uploadDir = "customer-files/" + updatedUser.getId();
 		 
-        FileUploadUtil.saveFile(uploadDir, updatedUser.getPanImage(), multipartFilePan);
-        FileUploadUtil.saveFile(uploadDir, updatedUser.getAadharImage(), multipartFileAadhar);
+        FileUploadUtil.saveFile(uploadDir, updatedUser.getPanImage(), updateCustomerRequest.getMultipartFilePan());
+        FileUploadUtil.saveFile(uploadDir, updatedUser.getAadharImage(), updateCustomerRequest.getMultipartFileAadhar());
 		
 		return ResponseEntity.status(HttpStatus.OK).build();
 		
