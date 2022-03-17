@@ -93,8 +93,8 @@ public class AdminController {
 	public ResponseEntity<?> createStaff(@Valid @RequestBody CreateStaffRequest request) {
 		
 		User staff = new User();
-		staff.setFullName(request.getUsername());
-		staff.setUsername(request.getFullName());
+		staff.setUsername(request.getUsername());
+		staff.setFullName(request.getFullName());
 		staff.setPassword(passwordEncoder.encode(request.getPassword()));
 		staff.setEnabledStatus(EnabledStatus.STATUS_ENABLED);
 		Role staffRole = roleRepository.findByRoleName(ERole.ROLE_STAFF)

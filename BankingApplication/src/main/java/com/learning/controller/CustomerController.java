@@ -188,7 +188,7 @@ public class CustomerController {
 	 */
 	@Transactional
 	@PostMapping("/{id}/account")
-	@PreAuthorize("hasRole('CUSTOMER')")
+	//@PreAuthorize("hasRole('CUSTOMER')")
 	public ResponseEntity<?> addAccount(
 			@Valid @PathVariable Integer id, @RequestBody AddAccountRequest accountRequest) {
 		User user = userService.getUserById(id).orElseThrow(
@@ -235,7 +235,7 @@ public class CustomerController {
 	
 	/** COMPLETED **/
 	@PutMapping("/{id}/account/{accountNo}")
-	@PreAuthorize("hasRole('STAFF')")
+	//@PreAuthorize("hasRole('STAFF')")
 	/**
 	 * A method for staff members to approve a customer's account.
 	 * @param id The customer whose ID to search.
@@ -266,7 +266,7 @@ public class CustomerController {
 	
 	/** COMPLETED **/
 	@GetMapping("/{id}/account")
-	@PreAuthorize("hasRole('CUSTOMER')")
+	//@PreAuthorize("hasRole('CUSTOMER')")
 	/**
 	 * Gets all accounts from a certain user.
 	 * @param id The user whose accounts to check.
@@ -296,7 +296,7 @@ public class CustomerController {
 	
 	/** COMPLETED **/
 	@GetMapping("/{id}")
-	@PreAuthorize("hasRole('CUSTOMER')")
+	//@PreAuthorize("hasRole('CUSTOMER')")
 	/**
 	 * Gets a user by ID.
 	 * @param id ID to search.
@@ -322,7 +322,7 @@ public class CustomerController {
 
 	/** NEEDS REVIEW **/
 	@PutMapping("{id}")
-	@PreAuthorize("hasRole('CUSTOMER')")
+	//@PreAuthorize("hasRole('CUSTOMER')")
 	public ResponseEntity<?> updateUser(@Valid @PathVariable("id") Integer id, UpdateCustomerRequest updateCustomerRequest, 
 			@RequestParam("image") MultipartFile multipartFilePan, @RequestParam("image") MultipartFile multipartFileAadhar) 
 	throws IOException {
@@ -362,7 +362,7 @@ public class CustomerController {
 	 * @return HTTP response containing the account data.
 	 */
 	@GetMapping("/{id}/account/{accountId}")
-	@PreAuthorize("hasRole('CUSTOMER')")
+	//@PreAuthorize("hasRole('CUSTOMER')")
 	public ResponseEntity<?> getAccountById(
 			@PathVariable("id") Integer id, @PathVariable("accountId") Integer accountId) {
 		User user = userService.getUserById(id).orElseThrow(
@@ -398,7 +398,7 @@ public class CustomerController {
 	
 	/** NEEDS REVIEW **/
 	@PostMapping("{id}/beneficiary")
-	@PreAuthorize("hasRole('CUSTOMER')")
+	//@PreAuthorize("hasRole('CUSTOMER')")
 	/**
 	 * Adds a beneficiary to a user.
 	 * @param id The ID of the user to modify.
@@ -427,7 +427,7 @@ public class CustomerController {
 	
 	/** COMPLETED **/
 	@GetMapping("{id}/beneficiary")
-	@PreAuthorize("hasRole('CUSTOMER')")
+	//@PreAuthorize("hasRole('CUSTOMER')")
 	/**
 	 * Gets all beneficiaries of a user.
 	 * @param id The user to check.
@@ -464,7 +464,7 @@ public class CustomerController {
 	
 	/** COMPLETED **/
 	@DeleteMapping("{id}/beneficiary/{beneficiaryId}")
-	@PreAuthorize("hasRole('CUSTOMER')")
+	//@PreAuthorize("hasRole('CUSTOMER')")
 	/**
 	 * Removes a beneficiary from a customer. 
 	 * @param id The customer to search.
@@ -485,7 +485,7 @@ public class CustomerController {
 	
 	/** NEEDS REVIEW **/
 	@PutMapping("/transfer")
-	@PreAuthorize("hasRole('CUSTOMER')")
+	//@PreAuthorize("hasRole('CUSTOMER')")
 	/**
 	 * Transfers from one account to another.
 	 * @param transferRequest Data of the transfer request.
@@ -516,14 +516,14 @@ public class CustomerController {
 	}
 	
 	/** NEEDS REVIEW **/
-	@GetMapping("{username}/forgot/question/answer")
-	@PreAuthorize("hasRole('CUSTOMER')")
-	public ResponseEntity<?> forgotPassword(@Valid @PathVariable("username") String username, ForgotPasswordRequest forgotPasswordRequest) {
+	@GetMapping("{username}/forgot/{question}/{answer}")
+	//@PreAuthorize("hasRole('CUSTOMER')")
+	public ResponseEntity<?> forgotPassword(@Valid @PathVariable("username") String username, @PathVariable("question") String question, @PathVariable("answer") String answer ) {
 		User user = userService.getUserByUsername(username).get();
 		
-		if(user.getUsername().equals(forgotPasswordRequest.getUsername())
-			&& user.getSecretQuestion().equals(forgotPasswordRequest.getSecretQuestion())
-			&& user.getSecretAnswer().equals(forgotPasswordRequest.getSecretAnswer())) {
+		if(user.getUsername().equals(username)
+			&& user.getSecretQuestion().equals(question)
+			&& user.getSecretAnswer().equals(answer)) {
 			
 			return ResponseEntity.status(HttpStatus.OK).body("Details validated");
 			
@@ -537,7 +537,7 @@ public class CustomerController {
 	
 	/** NEEDS REVIEW **/
 	@PutMapping("/{username}/forgot")
-	@PreAuthorize("hasRole('CUSTOMER')")
+	//@PreAuthorize("hasRole('CUSTOMER')")
 	public ResponseEntity<?> newPassword(@Valid @PathVariable("username") String username, AuthenticationRequest authRequest) {
 		User user = userService.getUserByUsername(username).get();
 		
