@@ -47,7 +47,11 @@ class CustomerControllerTests {
 	void testCreateAccount() {
 		AddAccountRequest request = new AddAccountRequest();
 		request.setAccountBalance(200.00);
+
+		request.setAccountType("CA");
+
 		request.setAccountType("SB");
+
 		
 		AddAccountResponse response = 
 				(AddAccountResponse) customerController.addAccount(1, request)

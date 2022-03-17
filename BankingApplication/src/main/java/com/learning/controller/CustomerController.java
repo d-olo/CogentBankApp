@@ -188,12 +188,16 @@ public class CustomerController {
 	 */
 	@Transactional
 	@PostMapping("/{id}/account")
+	@PreAuthorize("hasRole('CUSTOMER')")
 	public ResponseEntity<?> addAccount(
 			@Valid @PathVariable Integer id, @RequestBody AddAccountRequest accountRequest) {
 		User user = userService.getUserById(id).orElseThrow(
 				()->new IdNotFoundException(
 						"Sorry, Customer with ID: " + id + " not found.")
 				);
+		
+		//System.out.println(accountRequest.getAccountType());
+		//System.out.println(accountRequest.getAccountBalance());
 		
 		Account account = new Account();
 		
@@ -262,6 +266,7 @@ public class CustomerController {
 	
 	/** COMPLETED **/
 	@GetMapping("/{id}/account")
+	@PreAuthorize("hasRole('CUSTOMER')")
 	/**
 	 * Gets all accounts from a certain user.
 	 * @param id The user whose accounts to check.
@@ -291,6 +296,7 @@ public class CustomerController {
 	
 	/** COMPLETED **/
 	@GetMapping("/{id}")
+	@PreAuthorize("hasRole('CUSTOMER')")
 	/**
 	 * Gets a user by ID.
 	 * @param id ID to search.
@@ -316,6 +322,7 @@ public class CustomerController {
 
 	/** NEEDS REVIEW **/
 	@PutMapping("{id}")
+	@PreAuthorize("hasRole('CUSTOMER')")
 	public ResponseEntity<?> updateUser(@Valid @PathVariable("id") Integer id, UpdateCustomerRequest updateCustomerRequest, 
 			@RequestParam("image") MultipartFile multipartFilePan, @RequestParam("image") MultipartFile multipartFileAadhar) 
 	throws IOException {
@@ -355,6 +362,7 @@ public class CustomerController {
 	 * @return HTTP response containing the account data.
 	 */
 	@GetMapping("/{id}/account/{accountId}")
+	@PreAuthorize("hasRole('CUSTOMER')")
 	public ResponseEntity<?> getAccountById(
 			@PathVariable("id") Integer id, @PathVariable("accountId") Integer accountId) {
 		User user = userService.getUserById(id).orElseThrow(
@@ -390,6 +398,7 @@ public class CustomerController {
 	
 	/** NEEDS REVIEW **/
 	@PostMapping("{id}/beneficiary")
+	@PreAuthorize("hasRole('CUSTOMER')")
 	/**
 	 * Adds a beneficiary to a user.
 	 * @param id The ID of the user to modify.
@@ -418,6 +427,7 @@ public class CustomerController {
 	
 	/** COMPLETED **/
 	@GetMapping("{id}/beneficiary")
+	@PreAuthorize("hasRole('CUSTOMER')")
 	/**
 	 * Gets all beneficiaries of a user.
 	 * @param id The user to check.
