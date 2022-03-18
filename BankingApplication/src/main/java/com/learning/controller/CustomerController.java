@@ -49,10 +49,10 @@ import com.learning.exception.IdNotFoundException;
 import com.learning.exception.NoDataFoundException;
 import com.learning.exception.OperationFailedException;
 import com.learning.payload.request.AuthenticationRequest;
-import com.learning.payload.request.ForgotPasswordRequest;
 import com.learning.payload.request.UpdateCustomerRequest;
 import com.learning.payload.request.customer.AddAccountRequest;
 import com.learning.payload.request.customer.AddBeneficiaryRequest;
+import com.learning.payload.request.customer.ForgotPasswordRequest;
 import com.learning.payload.request.customer.RegisterCustomerRequest;
 import com.learning.payload.request.customer.TransferRequest;
 import com.learning.payload.response.GetCustomerResponse;
@@ -223,6 +223,7 @@ public class CustomerController {
 		accountResponse.setAccountType(createdAccount.getAccountType());
 		accountResponse.setAccountBalance(createdAccount.getAccountBalance());
 		accountResponse.setDateCreated(createdAccount.getDateCreated());
+		accountResponse.setAccountNumber(createdAccount.getAccountId());
 		accountResponse.setCustomerId(createdAccount.getAccountOwner().getId());
 		accountResponse.setApprovedStatus(createdAccount.getApprovedStatus());
 		
@@ -279,6 +280,7 @@ public class CustomerController {
 		
 		accounts.forEach(e-> {
 			GetAccountResponse accountList = new GetAccountResponse();
+			accountList.setAccountNumber(e.getAccountId());
 			accountList.setAccountType(e.getAccountType());
 			accountList.setAccountBalance(e.getAccountBalance());
 			accountList.setApprovedStatus(e.getApprovedStatus());
@@ -372,6 +374,7 @@ public class CustomerController {
 		
 		AccountByIdResponse response = new AccountByIdResponse();
 		
+		response.setAccountNumber(account.getAccountId());
 		response.setAccountType(account.getAccountType().name());
 		response.setAccountBalance(account.getAccountBalance());
 		response.setEnabledStatus(account.getEnabledStatus());
@@ -397,14 +400,40 @@ public class CustomerController {
 	 * @return HTTP response confirming the beneficiary addition.
 	 */
 	public ResponseEntity<?> addBeneficiary(
-			@PathVariable("id") Integer id, AddBeneficiaryRequest beneficiaryRequest) {
+			@PathVariable("id") Integer id, @Valid @RequestBody AddBeneficiaryRequest beneficiaryRequest) {
 		User user = userService.getUserById(id).orElseThrow(
 				()-> new RuntimeException("Sorry, Customer with ID: " + id + " not found"));
 		
 		Beneficiary beneficiary = new Beneficiary();
 		
+		Account account = accountService.findByAccountId(
+				beneficiaryRequest.getAccountNumber()
+				)
+				.orElseThrow(()-> new RuntimeException(
+						"Sorry, Account with ID: " + 
+						beneficiaryRequest.getAccountNumber() + 
+						" not found"));
+		
+		switch (beneficiaryRequest.getAccountType()) {
+		case "SB":
+			if(account.getAccountType() == AccountType.ACCOUNT_SAVINGS)
+				beneficiary.setAccountType(AccountType.ACCOUNT_SAVINGS);
+			else
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+						.body("Beneficiary not added: wrong account type.");
+			break;
+		case "CA":
+			if(account.getAccountType() == AccountType.ACCOUNT_CHECKING)
+				beneficiary.setAccountType(AccountType.ACCOUNT_CHECKING);
+			else
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+						.body("Beneficiary not added: wrong account type.");
+			break;
+		default:
+			break;
+		}
+		
 		beneficiary.setAccountNumber(beneficiaryRequest.getAccountNumber());
-		beneficiary.setAccountType(beneficiaryRequest.getAccountType());
 		beneficiary.setApprovedStatus(beneficiaryRequest.getApprovedStatus());
 		beneficiary.setMainUser(user);
 		beneficiary.setBeneficiaryAddedDate(Date.valueOf(LocalDate.now()));
@@ -427,27 +456,17 @@ public class CustomerController {
 		User user = userService.getUserById(id)
 				.orElseThrow(()-> new RuntimeException(
 						"Sorry, Customer with ID: " + id + " not found"));
-		Set<Beneficiary> beneficiaries = new HashSet<>();
+		Set<Beneficiary> beneficiaries = user.getBeneficiaries();
+		Set<BeneficiaryListResponse> response = new HashSet<BeneficiaryListResponse>();
 		
-		user.getBeneficiaries().forEach(e-> {
-			beneficiaries.add(e);
-		});
-		
-		Set<BeneficiaryListResponse> response = null;
-		
-		if(beneficiaries.size() > 0) {
-		
-			response = new HashSet<>();
+		beneficiaries.forEach(e-> {
+			BeneficiaryListResponse beneficiaryList = new BeneficiaryListResponse();
+			beneficiaryList.setBeneficiaryAccountNumber(e.getAccountNumber());
+			beneficiaryList.setBeneficiaryName(e.getMainUser().getFullName());
+			beneficiaryList.setActiveStatus(e.getActiveStatus());
 			
-			beneficiaries.forEach(e-> {
-				BeneficiaryListResponse beneficiaryList = new BeneficiaryListResponse();
-				beneficiaryList.setBeneficiaryAccountNumber(e.getAccountNumber());
-				beneficiaryList.setBeneficiaryName(e.getMainUser().getFullName());
-				beneficiaryList.setActiveStatus(e.getActiveStatus());
-			});
-		} else {
-			response = Collections.emptySet();
-		}
+			response.add(beneficiaryList);			
+		});
 		
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
@@ -464,6 +483,15 @@ public class CustomerController {
 	public ResponseEntity<?> deleteBeneficiary(@PathVariable("id") Integer id, @PathVariable("beneficiaryId") Integer beneficiaryId) {
 		
 		if(beneficiaryService.existsById(beneficiaryId)) {
+			User user = userService.getUserById(id).get();
+			Set<Beneficiary> beneficiaries = user.getBeneficiaries();
+			for(Beneficiary beneficiary : beneficiaries) {
+				if(beneficiary.getBeneficiaryId() == beneficiaryId) {
+					beneficiary.setMainUser(null);
+					beneficiaries.remove(beneficiary);
+				}
+			}
+			userService.updateUser(user);
 			beneficiaryService.deleteBeneficiary(beneficiaryId);
 			return ResponseEntity.status(HttpStatus.OK)
 					.body("Beneficiary deleted successfully");
@@ -473,7 +501,6 @@ public class CustomerController {
 	
 	}
 	
-	/** NEEDS REVIEW **/
 	@PutMapping("/transfer")
 	@PreAuthorize("hasRole('CUSTOMER')")
 	/**
@@ -481,7 +508,7 @@ public class CustomerController {
 	 * @param transferRequest Data of the transfer request.
 	 * @return HTTP response confirming successful transfer.
 	 */
-	public ResponseEntity<?> transferAmount(TransferRequest transferRequest) {
+	public ResponseEntity<?> transferAmount(@Valid @RequestBody TransferRequest transferRequest) {
 		Account toAccount = accountService.findByAccountId(transferRequest.getToAccNumber())
 				.orElseThrow(
 						()-> new RuntimeException("Account not found")
@@ -495,6 +522,8 @@ public class CustomerController {
 		fromAccount.setAccountBalance(fromAccount.getAccountBalance() - transferRequest.getAmount());
 		
 		TransferResponse transferResponse = new TransferResponse();
+		transferResponse.setFromAccNumber(transferRequest.getFromAccNumber());
+		transferResponse.setToAccNumber(transferRequest.getToAccNumber());
 		transferResponse.setAmount(transferRequest.getAmount());
 		transferResponse.setReason(transferRequest.getReason());
 		transferResponse.setBy(transferRequest.getBy());	
@@ -505,10 +534,9 @@ public class CustomerController {
 		return ResponseEntity.status(HttpStatus.OK).body(transferResponse);
 	}
 	
-	/** NEEDS REVIEW **/
 	@GetMapping("{username}/forgot/question/answer")
 	@PreAuthorize("hasRole('CUSTOMER')")
-	public ResponseEntity<?> forgotPassword(@Valid @PathVariable("username") String username, ForgotPasswordRequest forgotPasswordRequest) {
+	public ResponseEntity<?> forgotPassword(@Valid @PathVariable("username") String username, @Valid @RequestBody ForgotPasswordRequest forgotPasswordRequest) {
 		User user = userService.getUserByUsername(username).get();
 		
 		if(user.getUsername().equals(forgotPasswordRequest.getUsername())
@@ -525,14 +553,14 @@ public class CustomerController {
 	}
 	
 	
-	/** NEEDS REVIEW **/
 	@PutMapping("/{username}/forgot")
 	@PreAuthorize("hasRole('CUSTOMER')")
-	public ResponseEntity<?> newPassword(@Valid @PathVariable("username") String username, AuthenticationRequest authRequest) {
+	public ResponseEntity<?> newPassword(@Valid @PathVariable("username") String username, 
+			@Valid @RequestBody AuthenticationRequest authRequest) {
 		User user = userService.getUserByUsername(username).get();
 		
 		if(user != null && !user.getPassword().equals(authRequest.getPassword())) {
-			user.setPassword(authRequest.getPassword());
+			user.setPassword(passwordEncoder.encode(authRequest.getPassword()));
 		
 			userService.updateUser(user);
 		

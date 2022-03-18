@@ -84,7 +84,7 @@ class CustomerControllerTests {
 	void testAddBeneficiary() {
 		AddBeneficiaryRequest request = new AddBeneficiaryRequest();
 		request.setAccountNumber(12);
-		request.setAccountType(AccountType.ACCOUNT_SAVINGS);
+		request.setAccountType("SB");
 		
 		customerController.addBeneficiary(1, request);
 	}

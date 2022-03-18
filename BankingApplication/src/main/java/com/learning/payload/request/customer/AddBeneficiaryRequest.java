@@ -14,8 +14,7 @@ public class AddBeneficiaryRequest {
 	@NotNull
 	private Integer accountNumber;
 	@NotNull
-	@Enumerated(EnumType.STRING)
-	private AccountType accountType;
+	private String accountType;
 	@NotNull
 	@Enumerated(EnumType.STRING)
 	private ApprovedStatus approvedStatus = ApprovedStatus.STATUS_NOT_APPROVED;
