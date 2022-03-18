@@ -20,6 +20,10 @@ public class AddAccountRequest {
 	private String accountType;
 	@NotNull
 	private Double accountBalance;
-	@NotBlank
-	private String approvedStatus;
+
+	
+
+	//@NotBlank
+	//private String approvedStatus;
+
 }

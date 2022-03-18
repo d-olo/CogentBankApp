@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+
 import com.learning.entity.Role;
 import com.learning.entity.User;
 import com.learning.enums.ERole;
@@ -36,7 +37,9 @@ import com.learning.exception.IdNotFoundException;
 import com.learning.exception.UnauthorizedAccessException;
 import com.learning.payload.request.AuthenticationRequest;
 import com.learning.payload.request.admin.CreateStaffRequest;
+import com.learning.payload.request.admin.RegisterAdminRequest;
 import com.learning.payload.request.admin.SetStaffEnabledRequest;
+import com.learning.payload.response.AdminRegisterResponse;
 import com.learning.payload.response.JwtResponse;
 import com.learning.repo.RoleRepository;
 import com.learning.security.jwt.JwtUtils;
@@ -85,14 +88,14 @@ public class AdminController {
 				.body(new JwtResponse(jwt, userDetailsImpl.getId(), userDetailsImpl.getUsername(), jwt, roles));
 	}
 	
-	@PreAuthorize("hasRole('ADMIN')")
+	//@PreAuthorize("hasRole('ROLE_ADMIN')")
 	@PostMapping("/staff")
 	public ResponseEntity<?> createStaff(@Valid @RequestBody CreateStaffRequest request) {
 		
 		User staff = new User();
-		staff.setFullName(request.getStaffFullName());
-		staff.setUsername(request.getStaffUserName());
-		staff.setPassword(passwordEncoder.encode(request.getStaffPassword()));
+		staff.setUsername(request.getUsername());
+		staff.setFullName(request.getFullName());
+		staff.setPassword(passwordEncoder.encode(request.getPassword()));
 		staff.setEnabledStatus(EnabledStatus.STATUS_ENABLED);
 		Role staffRole = roleRepository.findByRoleName(ERole.ROLE_STAFF)
 				.orElseThrow(() -> 
@@ -133,5 +136,40 @@ public class AdminController {
 		
 		userService.updateUser(staff);
 		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+	
+	@PostMapping("/register")
+	public ResponseEntity<?> register(
+			@Valid @RequestBody RegisterAdminRequest request) {
+		
+		// Creating new user.
+		User user = new User();
+		user.setUsername(request.getUsername());
+		
+		user.setPassword(passwordEncoder.encode(request.getPassword()));
+		
+		// Initialization of roles with Admin
+		Set<Role> roles = new HashSet<Role>();
+		Role adminRole = roleRepository.findByRoleName(ERole.ROLE_ADMIN)
+				.orElseThrow(() -> 
+					new EnumNotFoundException("User role not in database."));
+		roles.add(adminRole);
+
+		user.setRoles(roles);
+		
+		// Initialization of empty fields.
+		user.setAccounts(null);
+		user.setEnabledStatus(null);
+		user.setBeneficiaries(null);
+		
+		// Adding user to DB.
+		User regUser = userService.addUser(user);
+		
+		AdminRegisterResponse registerResponse = new AdminRegisterResponse();
+		registerResponse.setId(regUser.getId());
+		registerResponse.setUsername(regUser.getUsername());
+		registerResponse.setPassword(regUser.getPassword());
+		
+		return ResponseEntity.status(HttpStatus.CREATED).body(registerResponse);
 	}
 }
