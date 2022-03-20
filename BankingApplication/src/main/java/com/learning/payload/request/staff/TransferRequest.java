@@ -21,5 +21,5 @@ public class TransferRequest {
 	@NotBlank
 	private String reason;
 	@NotBlank
-	private String role;
+	private String by;
 }

@@ -2,7 +2,8 @@ package com.learning.payload.request.staff;
 
 import java.sql.Date;
 
-import javax.validation.constraints.NotBlank;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.validation.annotation.Validated;
@@ -20,7 +21,8 @@ public class ApproveBeneficiaryRequest {
 	  private Integer beneficiaryAcNo;
 	  @NotNull
 	  private Date beneficiaryAddedDate;
-	  @NotBlank
+	  @NotNull
+	  @Enumerated(EnumType.STRING)
 	  private ApprovedStatus approvedStatus;
 
 }

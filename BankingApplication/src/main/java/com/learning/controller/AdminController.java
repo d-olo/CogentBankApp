@@ -65,14 +65,17 @@ public class AdminController {
 	public ResponseEntity<?> signin(@Valid @RequestBody AuthenticationRequest signinRequest) {
 	
 		Authentication authentication = authenticationManager.authenticate(
-				new UsernamePasswordAuthenticationToken(signinRequest.getUsername(), signinRequest.getPassword()));
+				new UsernamePasswordAuthenticationToken(
+						signinRequest.getUsername(), 
+						signinRequest.getPassword()));
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 		
 		String jwt = jwtUtils.generateToken(authentication);
 		// get user data/ principal
 	
 		UserDetailsImpl userDetailsImpl = (UserDetailsImpl) authentication.getPrincipal();
-		List<String> roles = userDetailsImpl.getAuthorities().stream().map(e -> e.getAuthority())
+		List<String> roles = userDetailsImpl.getAuthorities()
+				.stream().map(e -> e.getAuthority())
 				.collect(Collectors.toList());
 		// return new token
 		boolean isadmin = false;
@@ -85,10 +88,14 @@ public class AdminController {
 			throw new UnauthorizedAccessException("unauthorized access");
 		}
 		return ResponseEntity.status(HttpStatus.OK)
-				.body(new JwtResponse(jwt, userDetailsImpl.getId(), userDetailsImpl.getUsername(), jwt, roles));
+				.body(new JwtResponse(jwt, 
+						userDetailsImpl.getId(), 
+						userDetailsImpl.getUsername(), 
+						userDetailsImpl.getFullName(), 
+						roles));
 	}
 	
-	//@PreAuthorize("hasRole('ROLE_ADMIN')")
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
 	@PostMapping("/staff")
 	public ResponseEntity<?> createStaff(@Valid @RequestBody CreateStaffRequest request) {
 		
@@ -113,6 +120,7 @@ public class AdminController {
 	public ResponseEntity<?> getAllStaff() {
 		List<User> staff = new ArrayList<>();
 		staff = userService.findAllByRoleName(ERole.ROLE_STAFF);
+		//TODO staff response that only contains necessary fields
 		return ResponseEntity.status(HttpStatus.OK).body(staff);
 	}
 	

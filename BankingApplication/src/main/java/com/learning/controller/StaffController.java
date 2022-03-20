@@ -101,6 +101,10 @@ public class StaffController {
 		List<String> roles = userDetailsImpl.getAuthorities().stream()
 				.map(e-> e.getAuthority()).collect(Collectors.toList());
 		
+		// If the user is not a staff member, return a 403 error.
+		if(!roles.contains("ROLE_STAFF"))
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
 		// Builds a response from the JWT.
 		return ResponseEntity.ok(new JwtResponse(
 				jwt, 
@@ -108,7 +112,6 @@ public class StaffController {
 				userDetailsImpl.getUsername(), 
 				userDetailsImpl.getFullName(), 
 				roles));
-	
 	}
 	
 	@GetMapping(value = "/account/{accountNum}")
@@ -131,16 +134,18 @@ public class StaffController {
 	
 	@GetMapping("/beneficiary")
 	public ResponseEntity<?> getUnapprovedBeneficiaries() {
-		List<Beneficiary> beneficiaries = beneficiaryRepository.findAllByApprovedStatus(BeneficiaryStatus.STATUS_NOT_APPROVED);
-		List<BeneficiaryApproved> unapprovedLists = new ArrayList<>();
+		List<Beneficiary> beneficiaries = beneficiaryRepository.findAll();
+		List<BeneficiaryApproved> unapprovedLists = new ArrayList<BeneficiaryApproved>();
 		for (Beneficiary beneficiary : beneficiaries) {
-			BeneficiaryApproved unapprovedList = new BeneficiaryApproved();
-			unapprovedList.setBeneficiaryId(beneficiary.getBeneficiaryId());
-			unapprovedList.setBeneficiaryAcNo(beneficiary.getAccountNumber());
-			unapprovedList.setBeneficiaryAddedDate(beneficiary.getBeneficiaryAddedDate());
-			unapprovedList.setApprovedStatus(beneficiary.getApprovedStatus());
-			
-			unapprovedLists.add(unapprovedList);
+			if(beneficiary.getApprovedStatus() == ApprovedStatus.STATUS_NOT_APPROVED) {
+				BeneficiaryApproved unapprovedList = new BeneficiaryApproved();
+				unapprovedList.setBeneficiaryId(beneficiary.getBeneficiaryId());
+				unapprovedList.setBeneficiaryAcNo(beneficiary.getAccountNumber());
+				unapprovedList.setBeneficiaryAddedDate(beneficiary.getBeneficiaryAddedDate());
+				unapprovedList.setApprovedStatus(beneficiary.getApprovedStatus());
+				
+				unapprovedLists.add(unapprovedList);
+			}
 		}
 		
 		return ResponseEntity.status(HttpStatus.OK).body(unapprovedLists);
@@ -169,22 +174,23 @@ public class StaffController {
 	
 	@GetMapping("/accounts/approve")
 	public ResponseEntity<?> getUnapprovedAccounts() {
-		List<Account> accounts	= accountRepository
-				.findAllByApprovedStatus(ApprovedStatus.STATUS_NOT_APPROVED);
+		List<Account> accounts	= accountRepository.findAll();
 		List<AccountApproved> unapprovedLists = new ArrayList<>();
 		for (Account account : accounts) {
-			AccountApproved unapprovedList = new AccountApproved();
-			unapprovedList.setAccountType(account.getAccountType().toString());
-//			unapprovedList.setCustomerName(account.getAccountOwner().getFullName());
-			unapprovedList.setCustomerName(userRepository
-					.findById(account.getAccountOwner().getId())
-					.orElseThrow(() -> new NoDataFoundException("Sorry, Customer Not Found"))
-					.getFullName());
-			unapprovedList.setAccountNumber(account.getAccountId());
-			unapprovedList.setDateCreated(account.getDateCreated());
-			unapprovedList.setApprovedStatus(account.getApprovedStatus());
-			
-			unapprovedLists.add(unapprovedList);
+			if(account.getApprovedStatus() == ApprovedStatus.STATUS_NOT_APPROVED) {
+				AccountApproved unapprovedList = new AccountApproved();
+				unapprovedList.setAccountType(account.getAccountType().toString());
+	//			unapprovedList.setCustomerName(account.getAccountOwner().getFullName());
+				unapprovedList.setCustomerName(userRepository
+						.findById(account.getAccountOwner().getId())
+						.orElseThrow(() -> new NoDataFoundException("Sorry, Customer Not Found"))
+						.getFullName());
+				unapprovedList.setAccountNumber(account.getAccountId());
+				unapprovedList.setDateCreated(account.getDateCreated());
+				unapprovedList.setApprovedStatus(account.getApprovedStatus());
+				
+				unapprovedLists.add(unapprovedList);
+			}
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(unapprovedLists);
 	}
@@ -195,19 +201,19 @@ public class StaffController {
 		Account account = accountRepository.getById(request.getAccNum());
 		account.setApprovedStatus(request.getApproved());
 		accountRepository.save(account);
-		ApproveAccountRequest accountRespone = new ApproveAccountRequest();
-		accountRespone.setAccType(account.getAccountType().toString());
-		accountRespone.setCustomerName(account.getAccountOwner().getFullName());
+		ApproveAccountRequest accountResponse = new ApproveAccountRequest();
+		accountResponse.setAccType(account.getAccountType().toString());
+		accountResponse.setCustomerName(account.getAccountOwner().getFullName());
 //		accountRespone.setCustomerName(userRepository
 //				.findById(account.getAccountOwner().getId())
 //				.orElseThrow(() -> new NoDataFoundException("Sorry, Customer Not Found"))
 //				.getFullName());
-		accountRespone.setAccNum(account.getAccountId());
-		accountRespone.setDateCreated(account.getDateCreated());
-		accountRespone.setApproved(account.getApprovedStatus());
-		accountRespone.setStaffUsername(account.getAccountOwner().getUsername());
+		accountResponse.setAccNum(account.getAccountId());
+		accountResponse.setDateCreated(account.getDateCreated());
+		accountResponse.setApproved(account.getApprovedStatus());
+		accountResponse.setStaffUsername(request.getStaffUsername());
 	
-		return ResponseEntity.status(HttpStatus.OK).body(accountRespone);
+		return ResponseEntity.status(HttpStatus.OK).body(accountResponse);
 	}
 	
 	@GetMapping("/customer")
@@ -219,6 +225,7 @@ public class StaffController {
 			customerInfo.setCustomerId(customer.getAccountOwner().getId());
 			customerInfo.setCustomerName(customer.getAccountOwner().getFullName());
 			customerInfo.setStatus(customer.getEnabledStatus());
+			customerInfo.setCreated(customer.getDateCreated());
 			customersResponse.add(customerInfo);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(customersResponse);
@@ -234,7 +241,7 @@ public class StaffController {
 		return ResponseEntity.status(HttpStatus.OK).body("Customer Status Changed");
 	}
 	
-	@GetMapping("/customer/:{id}")
+	@GetMapping("/customer/{customerId}")
 	public ResponseEntity<?> getCustomerById(@PathVariable Integer customerId) {
 		Account customer = accountRepository.findById(customerId)
 				.orElseThrow(() -> new NoDataFoundException("Sorry, Customer Not Found"));
@@ -263,7 +270,7 @@ public class StaffController {
 		transferResponse.setToAccNumber(toAccount.getAccountId());
 		transferResponse.setAmount(request.getAmount());
 		transferResponse.setReason(request.getReason());
-		
+		transferResponse.setBy(request.getBy());		
 		accountService.updateAccount(fromAccount);
 		accountService.updateAccount(toAccount);
 		
