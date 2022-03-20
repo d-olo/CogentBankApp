@@ -22,7 +22,9 @@ import com.learning.enums.EnabledStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
 @AllArgsConstructor
@@ -47,6 +49,8 @@ public class Account {
 	private ApprovedStatus approvedStatus;
 	
 	@ManyToOne
+	@EqualsAndHashCode.Exclude
+	@ToString.Exclude
 	private User accountOwner;
 	
 	@Enumerated(EnumType.STRING)
@@ -58,6 +62,8 @@ public class Account {
 	@OneToMany(mappedBy = "account",
 			cascade = CascadeType.ALL,
 			fetch = FetchType.LAZY)
+	@EqualsAndHashCode.Exclude
+	@ToString.Exclude
 	private Set<Transaction> transactions;
 	
 	

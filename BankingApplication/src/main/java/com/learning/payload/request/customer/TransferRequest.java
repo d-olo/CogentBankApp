@@ -9,9 +9,9 @@ import lombok.Data;
 public class TransferRequest {
 
 	@NotNull
-	private Integer toAccNumber;
+	private Integer toAccount;
 	@NotNull
-	private Integer fromAccNumber;
+	private Integer fromAccount;
 	@NotNull
 	private Double amount;
 	@NotNull

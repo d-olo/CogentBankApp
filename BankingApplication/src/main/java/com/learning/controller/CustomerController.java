@@ -3,6 +3,7 @@ package com.learning.controller;
 import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -40,9 +41,11 @@ import com.learning.entity.Role;
 import com.learning.entity.Transaction;
 import com.learning.entity.User;
 import com.learning.enums.AccountType;
+import com.learning.enums.ActiveStatus;
 import com.learning.enums.ApprovedStatus;
 import com.learning.enums.ERole;
 import com.learning.enums.EnabledStatus;
+import com.learning.enums.TransactionType;
 import com.learning.exception.DataMismatchException;
 import com.learning.exception.EnumNotFoundException;
 import com.learning.exception.IdNotFoundException;
@@ -60,9 +63,12 @@ import com.learning.payload.response.JwtResponse;
 import com.learning.payload.response.TransferResponse;
 import com.learning.payload.response.customer.AccountByIdResponse;
 import com.learning.payload.response.customer.AddAccountResponse;
+import com.learning.payload.response.customer.AddBeneficiaryResponse;
+import com.learning.payload.response.customer.ApiMessage;
 import com.learning.payload.response.customer.BeneficiaryListResponse;
 import com.learning.payload.response.customer.CustomerRegisterResponse;
 import com.learning.payload.response.customer.GetAccountResponse;
+import com.learning.payload.response.customer.GetCustomerDetails;
 import com.learning.repo.RoleRepository;
 import com.learning.security.jwt.JwtUtils;
 import com.learning.security.service.UserDetailsImpl;
@@ -197,17 +203,19 @@ public class CustomerController {
 		
 		Account account = new Account();
 		
-		switch (accountRequest.getAccountType()) {
-		case "SB":
-			account.setAccountType(AccountType.ACCOUNT_SAVINGS);
-			break;
-		case "CA":
-			account.setAccountType(AccountType.ACCOUNT_CHECKING);
-			break;
-		default:
-			break;
-		}
+//		switch (accountRequest.getAccountType()) {
+//		case "SB":
+//			account.setAccountType(AccountType.ACCOUNT_SAVINGS);
+//			break;
+//		case "CA":
+//			account.setAccountType(AccountType.ACCOUNT_CHECKING);
+//			break;
+//		default:
+//			break;
+//		}
 		
+		System.out.println(accountRequest.getAccountType());
+		account.setAccountType(accountRequest.getAccountType());
 		account.setAccountBalance(accountRequest.getAccountBalance());
 		
 		// All accounts are not approved on creation.
@@ -215,7 +223,7 @@ public class CustomerController {
 		account.setAccountOwner(user);
 		account.setDateCreated(Date.valueOf(LocalDate.now()));
 		account.setTransactions(new HashSet<Transaction>());
-		account.setEnabledStatus(EnabledStatus.STATUS_ENABLED);
+		account.setEnabledStatus(EnabledStatus.STATUS_DISABLED);
 		Account createdAccount = accountService.addAccount(account);
 		
 		// Build the HTTP response.
@@ -283,7 +291,7 @@ public class CustomerController {
 			accountList.setAccountNumber(e.getAccountId());
 			accountList.setAccountType(e.getAccountType());
 			accountList.setAccountBalance(e.getAccountBalance());
-			accountList.setApprovedStatus(e.getApprovedStatus());
+			accountList.setEnableStatus(e.getEnabledStatus());
 			response.add(accountList);
 		});
 		
@@ -318,8 +326,8 @@ public class CustomerController {
 
 	/** NEEDS REVIEW **/
 	@PutMapping("{id}")
-	public ResponseEntity<?> updateUser(@Valid @PathVariable("id") Integer id, UpdateCustomerRequest updateCustomerRequest, 
-			@RequestParam("image") MultipartFile multipartFilePan, @RequestParam("image") MultipartFile multipartFileAadhar) 
+	public ResponseEntity<?> updateUser(@Valid @PathVariable("id") Integer id, @RequestBody UpdateCustomerRequest updateCustomerRequest
+			) 
 	throws IOException {
 		User user = userService.getUserById(id).orElseThrow(()->new IdNotFoundException("Sorry, Customer with ID: " + id + " not found"));
 		
@@ -332,18 +340,14 @@ public class CustomerController {
 		
 		/* Not sure if correct way to accept image files from input */
 		
-		String panImage = StringUtils.cleanPath(multipartFilePan.getOriginalFilename());
-		String aadharImage = StringUtils.cleanPath(multipartFileAadhar.getOriginalFilename());
+	
 		
-		user.setPanImage(panImage);	
-		user.setAadharImage(aadharImage);	
+		
 			
 		User updatedUser = userService.updateUser(user);
 		
-		String uploadDir = "customer-files/" + updatedUser.getId();
-		 
-        FileUploadUtil.saveFile(uploadDir, updatedUser.getPanImage(), multipartFilePan);
-        FileUploadUtil.saveFile(uploadDir, updatedUser.getAadharImage(), multipartFileAadhar);
+		
+		
 		
 		return ResponseEntity.status(HttpStatus.OK).build();
 		
@@ -414,34 +418,42 @@ public class CustomerController {
 						beneficiaryRequest.getAccountNumber() + 
 						" not found"));
 		
-		switch (beneficiaryRequest.getAccountType()) {
-		case "SB":
-			if(account.getAccountType() == AccountType.ACCOUNT_SAVINGS)
-				beneficiary.setAccountType(AccountType.ACCOUNT_SAVINGS);
-			else
-				return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-						.body("Beneficiary not added: wrong account type.");
-			break;
-		case "CA":
-			if(account.getAccountType() == AccountType.ACCOUNT_CHECKING)
-				beneficiary.setAccountType(AccountType.ACCOUNT_CHECKING);
-			else
-				return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-						.body("Beneficiary not added: wrong account type.");
-			break;
-		default:
-			break;
-		}
-		
+//		switch (beneficiaryRequest.getAccountType()) {
+//		case "SB":
+//			if(account.getAccountType() == AccountType.SAVINGS)
+//				beneficiary.setAccountType(AccountType.SAVINGS);
+//			else
+//				return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+//						.body("Beneficiary not added: wrong account type.");
+//			break;
+//		case "CA":
+//			if(account.getAccountType() == AccountType.CURRENT)
+//				beneficiary.setAccountType(AccountType.CURRENT);
+//			else
+//				return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+//						.body("Beneficiary not added: wrong account type.");
+//			break;
+//		default:
+//			break;
+//		}
+//		
+		beneficiary.setAccountType(beneficiaryRequest.getAccountType());
 		beneficiary.setAccountNumber(beneficiaryRequest.getAccountNumber());
 		beneficiary.setApprovedStatus(beneficiaryRequest.getApprovedStatus());
 		beneficiary.setMainUser(user);
 		beneficiary.setBeneficiaryAddedDate(Date.valueOf(LocalDate.now()));
+		beneficiary.setActiveStatus(ActiveStatus.STATUS_ACTIVE);
 		
 		beneficiaryService.addBeneficiary(beneficiary);
 		
+		AddBeneficiaryResponse response = new AddBeneficiaryResponse();
+		response.setAccountNumber(beneficiaryRequest.getAccountNumber());
+		response.setAccountType(beneficiaryRequest.getAccountType());
+		response.setApproved(beneficiaryRequest.getApprovedStatus());
+		
+		
 		return ResponseEntity.status(HttpStatus.OK).body(
-				"Beneficiary with Account Number: "+ beneficiaryRequest.getAccountNumber() + " added");
+				response);
 	
 	}
 	
@@ -459,8 +471,11 @@ public class CustomerController {
 		Set<Beneficiary> beneficiaries = user.getBeneficiaries();
 		Set<BeneficiaryListResponse> response = new HashSet<BeneficiaryListResponse>();
 		
+		System.out.println(beneficiaries);
+		
 		beneficiaries.forEach(e-> {
 			BeneficiaryListResponse beneficiaryList = new BeneficiaryListResponse();
+			beneficiaryList.setBeneficiaryId(e.getBeneficiaryId());
 			beneficiaryList.setBeneficiaryAccountNumber(e.getAccountNumber());
 			beneficiaryList.setBeneficiaryName(e.getMainUser().getFullName());
 			beneficiaryList.setActiveStatus(e.getActiveStatus());
@@ -485,16 +500,27 @@ public class CustomerController {
 		if(beneficiaryService.existsById(beneficiaryId)) {
 			User user = userService.getUserById(id).get();
 			Set<Beneficiary> beneficiaries = user.getBeneficiaries();
+			
+			System.out.println(beneficiaries);
 			for(Beneficiary beneficiary : beneficiaries) {
 				if(beneficiary.getBeneficiaryId() == beneficiaryId) {
+					System.out.println(beneficiary);
 					beneficiary.setMainUser(null);
-					beneficiaries.remove(beneficiary);
+					
+					user.getBeneficiaries().removeIf(b -> {
+						return b.getBeneficiaryId() == beneficiaryId;});
+					//beneficiaries.remove(beneficiary);
+					//beneficiaryService.deleteBeneficiary(beneficiaryId);
+					
+					System.out.println(beneficiary);
+					System.out.println(beneficiaries);
+					userService.updateUser(user);
 				}
 			}
-			userService.updateUser(user);
-			beneficiaryService.deleteBeneficiary(beneficiaryId);
+			
+			
 			return ResponseEntity.status(HttpStatus.OK)
-					.body("Beneficiary deleted successfully");
+					.body(new ApiMessage("Beneficiary deleted successfully"));
 		} else {
 			throw new NoDataFoundException("Unable to delete beneficiary");
 		}
@@ -509,11 +535,11 @@ public class CustomerController {
 	 * @return HTTP response confirming successful transfer.
 	 */
 	public ResponseEntity<?> transferAmount(@Valid @RequestBody TransferRequest transferRequest) {
-		Account toAccount = accountService.findByAccountId(transferRequest.getToAccNumber())
+		Account toAccount = accountService.findByAccountId(transferRequest.getToAccount())
 				.orElseThrow(
 						()-> new RuntimeException("Account not found")
 				);
-		Account fromAccount = accountService.findByAccountId(transferRequest.getFromAccNumber())
+		Account fromAccount = accountService.findByAccountId(transferRequest.getFromAccount())
 				.orElseThrow(
 						()-> new RuntimeException("Account not found")
 				);
@@ -521,12 +547,35 @@ public class CustomerController {
 		toAccount.setAccountBalance(toAccount.getAccountBalance() + transferRequest.getAmount());
 		fromAccount.setAccountBalance(fromAccount.getAccountBalance() - transferRequest.getAmount());
 		
+		LocalDateTime now = LocalDateTime.now(); 
+		
+		Transaction fromTransaction = new Transaction();
+		fromTransaction.setReference(transferRequest.getReason());
+		fromTransaction.setDate(Date.valueOf(now.toLocalDate()));
+		fromTransaction.setAccount(fromAccount);
+		fromTransaction.setAmount(-transferRequest.getAmount());
+		fromTransaction.setTransactionType(TransactionType.DEBIT);
+		
+		fromAccount.getTransactions().add(fromTransaction);
+		
+		Transaction toTransaction = new Transaction();
+		toTransaction.setReference(transferRequest.getReason());
+		toTransaction.setDate(Date.valueOf(now.toLocalDate()));
+		toTransaction.setAccount(fromAccount);
+		toTransaction.setAmount(transferRequest.getAmount());
+		toTransaction.setTransactionType(TransactionType.DEBIT);
+		
+		toAccount.getTransactions().add(toTransaction);
+		
 		TransferResponse transferResponse = new TransferResponse();
-		transferResponse.setFromAccNumber(transferRequest.getFromAccNumber());
-		transferResponse.setToAccNumber(transferRequest.getToAccNumber());
+		transferResponse.setFromAccNumber(transferRequest.getFromAccount());
+		transferResponse.setToAccNumber(transferRequest.getToAccount());
 		transferResponse.setAmount(transferRequest.getAmount());
 		transferResponse.setReason(transferRequest.getReason());
 		transferResponse.setBy(transferRequest.getBy());	
+		
+		System.out.println(fromAccount.getTransactions().size());
+		System.out.println(toAccount.getTransactions().size());
 		
 		accountService.updateAccount(fromAccount);
 		accountService.updateAccount(toAccount);	
@@ -535,26 +584,32 @@ public class CustomerController {
 	}
 	
 	@GetMapping("{username}/forgot/question/answer")
-	@PreAuthorize("hasRole('CUSTOMER')")
-	public ResponseEntity<?> forgotPassword(@Valid @PathVariable("username") String username, @Valid @RequestBody ForgotPasswordRequest forgotPasswordRequest) {
+	//@PreAuthorize("hasRole('CUSTOMER')")
+	public ResponseEntity<?> forgotPassword(@Valid @PathVariable("username") String username) {
 		User user = userService.getUserByUsername(username).get();
 		
-		if(user.getUsername().equals(forgotPasswordRequest.getUsername())
-			&& user.getSecretQuestion().equals(forgotPasswordRequest.getSecretQuestion())
-			&& user.getSecretAnswer().equals(forgotPasswordRequest.getSecretAnswer())) {
-			
-			return ResponseEntity.status(HttpStatus.OK).body("Details validated");
-			
-			
-		} else {
-			throw new DataMismatchException("Sorry your secret details are not matching");
-		}
+//		if(user.getSecretQuestion().equals(forgotPasswordRequest.getSecretQuestion())
+//			&& user.getSecretAnswer().equals(forgotPasswordRequest.getSecretAnswer())) {
+//			
+//			
+//			
+//			
+//		} else {
+//			throw new DataMismatchException("Sorry your secret details are not matching");
+//		}
+		
+		GetCustomerDetails response = new GetCustomerDetails();
+		response.setSecretQ(user.getSecretQuestion());
+		response.setSecretA(user.getSecretAnswer());
+		
+		
+		return ResponseEntity.status(HttpStatus.OK).body(response);
 		
 	}
 	
 	
 	@PutMapping("/{username}/forgot")
-	@PreAuthorize("hasRole('CUSTOMER')")
+	//@PreAuthorize("hasRole('CUSTOMER')")
 	public ResponseEntity<?> newPassword(@Valid @PathVariable("username") String username, 
 			@Valid @RequestBody AuthenticationRequest authRequest) {
 		User user = userService.getUserByUsername(username).get();
@@ -563,8 +618,10 @@ public class CustomerController {
 			user.setPassword(passwordEncoder.encode(authRequest.getPassword()));
 		
 			userService.updateUser(user);
-		
-			return ResponseEntity.status(HttpStatus.OK).body("New password updated");
+			
+			ApiMessage apiMessage = new ApiMessage();
+			apiMessage.setMessage("New password updated");
+			return ResponseEntity.status(HttpStatus.OK).body(apiMessage);
 		} else {
 			throw new OperationFailedException("Sorry password not updated");
 		}

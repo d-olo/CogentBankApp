@@ -65,7 +65,7 @@ public class User {
 	
 	@OneToMany(mappedBy = "mainUser", 
 			cascade = CascadeType.ALL, 
-			fetch = FetchType.EAGER)
+			fetch = FetchType.EAGER, orphanRemoval = true)
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude
 	private Set<Beneficiary> beneficiaries;

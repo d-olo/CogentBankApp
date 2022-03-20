@@ -6,6 +6,7 @@ package com.learning.enums;
  * @since Mar 7, 2022
  */
 public enum AccountType {
-	ACCOUNT_SAVINGS,
-	ACCOUNT_CHECKING
+	CURRENT,
+	SAVINGS
+	
 }

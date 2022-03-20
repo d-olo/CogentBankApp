@@ -35,7 +35,7 @@ public class Beneficiary {
 	@Enumerated(EnumType.STRING)
 	private ApprovedStatus approvedStatus;
 	@Enumerated(EnumType.STRING)
-	private ActiveStatus activeStatus = ActiveStatus.STATUS_ACTIVE;
+	private ActiveStatus activeStatus;
 	
 	@NotNull
 	private Date beneficiaryAddedDate;

@@ -10,8 +10,8 @@ import lombok.Data;
 @Data
 @Validated
 public class ForgotPasswordRequest {
-	@NotBlank
-	private String username;
+	//@NotBlank
+	//private String username;
 	@NotBlank
 	private String secretQuestion;
 	@NotBlank
