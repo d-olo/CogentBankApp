@@ -200,17 +200,6 @@ public class CustomerController {
 		
 		Account account = new Account();
 		
-//		switch (accountRequest.getAccountType()) {
-//		case "SB":
-//			account.setAccountType(AccountType.ACCOUNT_SAVINGS);
-//			break;
-//		case "CA":
-//			account.setAccountType(AccountType.ACCOUNT_CHECKING);
-//			break;
-//		default:
-//			break;
-//		}
-		
 		System.out.println(accountRequest.getAccountType());
 		account.setAccountType(accountRequest.getAccountType());
 		account.setAccountBalance(accountRequest.getAccountBalance());
@@ -288,7 +277,7 @@ public class CustomerController {
 			accountList.setAccountNumber(e.getAccountId());
 			accountList.setAccountType(e.getAccountType().toString());
 			accountList.setAccountBalance(e.getAccountBalance());
-			accountList.setEnableStatus(e.getEnabledStatus());
+			accountList.setEnableStatus(e.getEnabledStatus().toString());
 			response.add(accountList);
 		});
 		

@@ -6,6 +6,14 @@ package com.learning.enums;
  * @since Mar 7, 2022
  */
 public enum EnabledStatus {
-	STATUS_ENABLED,
-	STATUS_DISABLED;
+	STATUS_ENABLED {
+		public String toString() {
+			return "Enabled";
+		}
+	},
+	STATUS_DISABLED {
+		public String toString() {
+			return "Disabled";
+		}
+	};
 }

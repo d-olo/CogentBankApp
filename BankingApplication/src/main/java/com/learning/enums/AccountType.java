@@ -6,12 +6,12 @@ package com.learning.enums;
  * @since Mar 7, 2022
  */
 public enum AccountType {
-	ACCOUNT_SAVINGS {
+	SAVINGS {
 		public String toString() {
 			return "Savings Account";
 		}
 	},
-	ACCOUNT_CURRENT {
+	CURRENT {
 		public String toString() {
 			return "Current Account";
 		}
