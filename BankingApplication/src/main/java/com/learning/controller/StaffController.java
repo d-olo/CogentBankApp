@@ -241,8 +241,7 @@ public class StaffController {
 		customer.setEnabledStatus(request.getStatus());
 		userService.updateUser(customer);
 		
-		JsonMessageResponse response = new JsonMessageResponse();
-		response.setMessage("Customer status changed.");
+		JsonMessageResponse response = new JsonMessageResponse("Customer status changed.");
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	

@@ -21,7 +21,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,22 +29,18 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.learning.entity.Account;
 import com.learning.entity.Beneficiary;
 import com.learning.entity.Role;
 import com.learning.entity.Transaction;
 import com.learning.entity.User;
-import com.learning.enums.AccountType;
 import com.learning.enums.ActiveStatus;
 import com.learning.enums.ApprovedStatus;
 import com.learning.enums.ERole;
 import com.learning.enums.EnabledStatus;
 import com.learning.enums.TransactionType;
-import com.learning.exception.DataMismatchException;
 import com.learning.exception.EnumNotFoundException;
 import com.learning.exception.IdNotFoundException;
 import com.learning.exception.NoDataFoundException;
@@ -54,7 +49,6 @@ import com.learning.payload.request.AuthenticationRequest;
 import com.learning.payload.request.UpdateCustomerRequest;
 import com.learning.payload.request.customer.AddAccountRequest;
 import com.learning.payload.request.customer.AddBeneficiaryRequest;
-import com.learning.payload.request.customer.ForgotPasswordRequest;
 import com.learning.payload.request.customer.RegisterCustomerRequest;
 import com.learning.payload.request.customer.TransferRequest;
 import com.learning.payload.response.GetCustomerResponse;
@@ -63,7 +57,6 @@ import com.learning.payload.response.JwtResponse;
 import com.learning.payload.response.TransferResponse;
 import com.learning.payload.response.customer.AccountByIdResponse;
 import com.learning.payload.response.customer.AddAccountResponse;
-import com.learning.payload.response.customer.AddBeneficiaryResponse;
 import com.learning.payload.response.customer.ApiMessage;
 import com.learning.payload.response.customer.BeneficiaryListResponse;
 import com.learning.payload.response.customer.CustomerRegisterResponse;
@@ -75,7 +68,6 @@ import com.learning.security.service.UserDetailsImpl;
 import com.learning.service.AccountService;
 import com.learning.service.BeneficiaryService;
 import com.learning.service.UserService;
-import com.learning.utils.FileUploadUtil;
 
 @RestController
 @RequestMapping("/customer")
@@ -119,6 +111,11 @@ public class CustomerController {
 	@PostMapping("/register")
 	public ResponseEntity<?> register(
 			@Valid @RequestBody RegisterCustomerRequest request) {
+		
+		if(userService.existsByUsername(request.getUsername())) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+					.body(new JsonMessageResponse("Username already exists."));
+		}
 		
 		// Creating new user.
 		User user = new User();
@@ -429,8 +426,9 @@ public class CustomerController {
 		
 		beneficiaryService.addBeneficiary(beneficiary);
 		
-		JsonMessageResponse response = new JsonMessageResponse();
-		response.setMessage("Beneficiary with Account Number: "+ beneficiaryRequest.getAccountNumber() + " added");
+		JsonMessageResponse response = 
+				new JsonMessageResponse("Beneficiary with Account Number: "
+						+ beneficiaryRequest.getAccountNumber() + " added");
 		
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	
