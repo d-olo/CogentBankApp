@@ -69,9 +69,11 @@ public class User {
 	
 	@OneToMany(mappedBy = "mainUser", 
 			cascade = CascadeType.ALL, 
-			fetch = FetchType.EAGER, orphanRemoval = true)
+			fetch = FetchType.LAZY, orphanRemoval = true)
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude
+	@JsonManagedReference
+	@JsonIgnore
 	private Set<Beneficiary> beneficiaries;
 	
 	private String phone;

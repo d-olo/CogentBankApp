@@ -12,13 +12,17 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.learning.enums.AccountType;
 import com.learning.enums.ActiveStatus;
 import com.learning.enums.ApprovedStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
 @AllArgsConstructor
@@ -41,5 +45,9 @@ public class Beneficiary {
 	private Date beneficiaryAddedDate;
 	
 	@ManyToOne
+	@EqualsAndHashCode.Exclude
+	@ToString.Exclude
+	@JsonManagedReference
+	@JsonIgnore
 	private User mainUser;
 }

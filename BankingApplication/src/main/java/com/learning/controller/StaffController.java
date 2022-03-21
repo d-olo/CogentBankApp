@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.learning.entity.Account;
 import com.learning.entity.Beneficiary;
+import com.learning.entity.Role;
 import com.learning.entity.User;
 import com.learning.enums.ApprovedStatus;
 import com.learning.enums.ERole;
@@ -218,18 +219,26 @@ public class StaffController {
 	public ResponseEntity<?> getAllCustomers() {
 		List<User> customers = userService.getAllUsers();
 		List<GetAllCustomersResponse> customersResponse = new ArrayList<>();
-		for(User customer : customers) {
-			for(com.learning.entity.Role role : customer.getRoles()) {
-				if (role.getRoleName() != ERole.ROLE_CUSTOMER)
-					continue;
+		
+		customers.forEach(e -> {
+			boolean isCustomer = false;
+			for(Role role: e.getRoles()) {
+				if (role.getRoleName() == ERole.ROLE_CUSTOMER) {
+					isCustomer = true;
+					break;
+				}
 			}
 			
-			GetAllCustomersResponse customerInfo = new GetAllCustomersResponse();
-			customerInfo.setCustomerId(customer.getId());
-			customerInfo.setCustomerName(customer.getFullName());
-			customerInfo.setStatus(customer.getEnabledStatus());
-			customersResponse.add(customerInfo);
-		}
+			if(isCustomer) {
+				GetAllCustomersResponse customerInfo = new GetAllCustomersResponse();
+				customerInfo.setCustomerId(e.getId());
+				customerInfo.setCustomerName(e.getFullName());
+				customerInfo.setStatus(e.getEnabledStatus());
+				customersResponse.add(customerInfo);
+			}
+		});
+		
+
 		return ResponseEntity.status(HttpStatus.OK).body(customersResponse);
 	}
 	

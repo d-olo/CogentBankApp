@@ -11,11 +11,15 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.learning.enums.TransactionType;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
 @AllArgsConstructor
@@ -38,6 +42,10 @@ public class Transaction {
 	private TransactionType transactionType;
 	
 	@ManyToOne
+	@EqualsAndHashCode.Exclude
+	@ToString.Exclude
+	@JsonManagedReference
+	@JsonIgnore
 	private Account account;
 
 }

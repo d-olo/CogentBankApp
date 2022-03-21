@@ -18,6 +18,7 @@ import javax.persistence.Table;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.learning.enums.AccountType;
 import com.learning.enums.ApprovedStatus;
 import com.learning.enums.EnabledStatus;
@@ -68,6 +69,8 @@ public class Account {
 			fetch = FetchType.LAZY)
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude
+	@JsonManagedReference
+	@JsonIgnore
 	private Set<Transaction> transactions;
 	
 	
