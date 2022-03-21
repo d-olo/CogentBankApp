@@ -13,4 +13,6 @@ public interface UserService {
 	public User updateUser(User user);
 	public List<User> findAllByRoleName(ERole roleName);
 	public List<User> getAllUsers();
+	public boolean existsByUsername(String username);
+
 }

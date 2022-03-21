@@ -5,6 +5,8 @@ import javax.persistence.Enumerated;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonFormat.Feature;
 import com.learning.enums.AccountType;
 import com.learning.enums.ApprovedStatus;
 
@@ -16,8 +18,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AddAccountRequest {
-	@NotBlank
-	private String accountType;
+	@NotNull
+	@JsonFormat(with = { Feature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, Feature.ACCEPT_CASE_INSENSITIVE_VALUES }) 
+	private AccountType accountType;
 	@NotNull
 	private Double accountBalance;
 

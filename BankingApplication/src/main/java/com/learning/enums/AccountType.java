@@ -11,7 +11,7 @@ public enum AccountType {
 			return "Savings Account";
 		}
 	},
-	ACCOUNT_CHECKING {
+	ACCOUNT_CURRENT {
 		public String toString() {
 			return "Current Account";
 		}

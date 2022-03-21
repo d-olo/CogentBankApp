@@ -5,8 +5,8 @@ import lombok.Data;
 
 @Data
 public class UpdateCustomerRequest {
-	@NotBlank
-	private Integer id;
+	//@NotBlank
+	//private Integer id;
 	@NotBlank
 	private String fullName;
 	@NotBlank

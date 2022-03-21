@@ -3,11 +3,15 @@ package com.learning.entity;
 import java.sql.Date;
 
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import com.learning.enums.TransactionType;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -29,7 +33,9 @@ public class Transaction {
 	private Integer id;
 	private Date date;
 	private String reference;
-	private Long amount;
+	private Double amount;
+	@Enumerated(EnumType.STRING)
+	private TransactionType transactionType;
 	
 	@ManyToOne
 	private Account account;

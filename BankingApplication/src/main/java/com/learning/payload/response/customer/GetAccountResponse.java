@@ -2,6 +2,7 @@ package com.learning.payload.response.customer;
 
 import com.learning.enums.AccountType;
 import com.learning.enums.ApprovedStatus;
+import com.learning.enums.EnabledStatus;
 
 import lombok.Data;
 
@@ -9,6 +10,6 @@ import lombok.Data;
 public class GetAccountResponse {
 	private String accountType;
 	private Double accountBalance;
-	private ApprovedStatus approvedStatus;
+	private EnabledStatus enableStatus;
 	private Integer accountNumber;
 }

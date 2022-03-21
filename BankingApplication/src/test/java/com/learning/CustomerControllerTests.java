@@ -47,7 +47,7 @@ class CustomerControllerTests {
 	void testCreateAccount() {
 		AddAccountRequest request = new AddAccountRequest();
 		request.setAccountBalance(200.00);
-		request.setAccountType("SB");
+		request.setAccountType(AccountType.ACCOUNT_CURRENT);
 		
 		AddAccountResponse response = 
 				(AddAccountResponse) customerController.addAccount(1, request)
@@ -84,7 +84,7 @@ class CustomerControllerTests {
 	void testAddBeneficiary() {
 		AddBeneficiaryRequest request = new AddBeneficiaryRequest();
 		request.setAccountNumber(12);
-		request.setAccountType("SB");
+		request.setAccountType(AccountType.ACCOUNT_SAVINGS);
 		
 		customerController.addBeneficiary(1, request);
 	}

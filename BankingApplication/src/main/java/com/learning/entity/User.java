@@ -18,6 +18,8 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.learning.enums.EnabledStatus;
 
 import lombok.AllArgsConstructor;
@@ -55,9 +57,11 @@ public class User {
 	
 	@OneToMany(mappedBy = "accountOwner",
 			cascade = CascadeType.ALL,
-			fetch = FetchType.EAGER)
+			fetch = FetchType.LAZY)
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude
+	@JsonManagedReference
+	@JsonIgnore
 	private Set<Account> accounts;
 	
 	@Enumerated(EnumType.STRING)
@@ -65,7 +69,7 @@ public class User {
 	
 	@OneToMany(mappedBy = "mainUser", 
 			cascade = CascadeType.ALL, 
-			fetch = FetchType.EAGER)
+			fetch = FetchType.EAGER, orphanRemoval = true)
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude
 	private Set<Beneficiary> beneficiaries;
