@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
 import com.learning.entity.Role;
 import com.learning.entity.User;
 import com.learning.enums.ERole;
@@ -42,6 +41,7 @@ import com.learning.payload.request.admin.SetStaffEnabledRequest;
 import com.learning.payload.response.AdminRegisterResponse;
 import com.learning.payload.response.JsonMessageResponse;
 import com.learning.payload.response.JwtResponse;
+import com.learning.payload.response.admin.GetStaffResponse;
 import com.learning.repo.RoleRepository;
 import com.learning.security.jwt.JwtUtils;
 import com.learning.security.service.UserDetailsImpl;
@@ -125,8 +125,17 @@ public class AdminController {
 	public ResponseEntity<?> getAllStaff() {
 		List<User> staff = new ArrayList<>();
 		staff = userService.findAllByRoleName(ERole.ROLE_STAFF);
-		//TODO staff response that only contains necessary fields
-		return ResponseEntity.status(HttpStatus.OK).body(staff);
+		List<GetStaffResponse> response = new ArrayList<GetStaffResponse>();
+		for(User staffMember : staff) {
+			GetStaffResponse responseElement = new GetStaffResponse();
+			responseElement.setStaffId(staffMember.getId());
+			responseElement.setStaffName(staffMember.getFullName());
+			responseElement.setStaffUsername(staffMember.getUsername());
+			responseElement.setStatus(staffMember.getEnabledStatus());
+			response.add(responseElement);
+		}
+		
+		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
 	@PreAuthorize("hasRole('ADMIN')")
@@ -136,19 +145,15 @@ public class AdminController {
 					()-> new IdNotFoundException("Staff status not changed")
 				);
 
-		Map<String, String> response = new LinkedHashMap<>();
-		response.put("staffId", " : " + request.getStaffId());
-		if(request.getEnabledStatus() == EnabledStatus.STATUS_ENABLED) {
-			response.put("status", " : " + EnabledStatus.STATUS_DISABLED.name());
-			staff.setEnabledStatus(EnabledStatus.STATUS_DISABLED);
+		if(request.getStatus() == EnabledStatus.STATUS_ENABLED) {
+			staff.setEnabledStatus(EnabledStatus.STATUS_ENABLED);
 		}	
 		else {
-			response.put("status", " : " + EnabledStatus.STATUS_ENABLED.name());
-			staff.setEnabledStatus(EnabledStatus.STATUS_ENABLED);
+			staff.setEnabledStatus(EnabledStatus.STATUS_DISABLED);
 		}
 		
 		userService.updateUser(staff);
-		return ResponseEntity.status(HttpStatus.OK).body(response);
+		return ResponseEntity.status(HttpStatus.OK).build();
 	}
 	
 	@PostMapping("/register")

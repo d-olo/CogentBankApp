@@ -281,7 +281,7 @@ public class CustomerController {
 		accounts.forEach(e-> {
 			GetAccountResponse accountList = new GetAccountResponse();
 			accountList.setAccountNumber(e.getAccountId());
-			accountList.setAccountType(e.getAccountType());
+			accountList.setAccountType(e.getAccountType().toString());
 			accountList.setAccountBalance(e.getAccountBalance());
 			accountList.setApprovedStatus(e.getApprovedStatus());
 			response.add(accountList);
@@ -463,6 +463,7 @@ public class CustomerController {
 		
 		beneficiaries.forEach(e-> {
 			BeneficiaryListResponse beneficiaryList = new BeneficiaryListResponse();
+			beneficiaryList.setBeneficiaryId(e.getBeneficiaryId());
 			beneficiaryList.setBeneficiaryAccountNumber(e.getAccountNumber());
 			beneficiaryList.setBeneficiaryName(e.getMainUser().getFullName());
 			beneficiaryList.setActiveStatus(e.getActiveStatus());
@@ -515,11 +516,11 @@ public class CustomerController {
 	 * @return HTTP response confirming successful transfer.
 	 */
 	public ResponseEntity<?> transferAmount(@Valid @RequestBody TransferRequest transferRequest) {
-		Account toAccount = accountService.findByAccountId(transferRequest.getToAccNumber())
+		Account toAccount = accountService.findByAccountId(transferRequest.getToAccount())
 				.orElseThrow(
 						()-> new RuntimeException("Account not found")
 				);
-		Account fromAccount = accountService.findByAccountId(transferRequest.getFromAccNumber())
+		Account fromAccount = accountService.findByAccountId(transferRequest.getFromAccount())
 				.orElseThrow(
 						()-> new RuntimeException("Account not found")
 				);
@@ -528,8 +529,8 @@ public class CustomerController {
 		fromAccount.setAccountBalance(fromAccount.getAccountBalance() - transferRequest.getAmount());
 		
 		TransferResponse transferResponse = new TransferResponse();
-		transferResponse.setFromAccNumber(transferRequest.getFromAccNumber());
-		transferResponse.setToAccNumber(transferRequest.getToAccNumber());
+		transferResponse.setFromAccNumber(transferRequest.getFromAccount());
+		transferResponse.setToAccNumber(transferRequest.getToAccount());
 		transferResponse.setAmount(transferRequest.getAmount());
 		transferResponse.setReason(transferRequest.getReason());
 		transferResponse.setBy(transferRequest.getBy());	

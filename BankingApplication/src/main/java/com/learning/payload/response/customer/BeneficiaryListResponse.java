@@ -6,6 +6,7 @@ import lombok.Data;
 
 @Data
 public class BeneficiaryListResponse {
+	private Integer beneficiaryId;
 	private Integer beneficiaryAccountNumber;
 	private String beneficiaryName;
 	private ActiveStatus activeStatus;

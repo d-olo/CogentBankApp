@@ -17,5 +17,5 @@ public class SetStaffEnabledRequest {
 	Integer staffId;
 	@NotNull
 	@Enumerated(EnumType.STRING)
-	EnabledStatus enabledStatus;
+	EnabledStatus status;
 }
