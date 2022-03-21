@@ -157,10 +157,10 @@ public class AdminController {
 		//response.put("staffId", " : " + request.getStaffId());
 		if(request.getStatus() == EnabledStatus.STATUS_ENABLED) {
 			
-			staff.setEnabledStatus(EnabledStatus.STATUS_DISABLED);
+			staff.setEnabledStatus(EnabledStatus.STATUS_ENABLED);
 		}	
 		else {
-			staff.setEnabledStatus(EnabledStatus.STATUS_ENABLED);
+			staff.setEnabledStatus(EnabledStatus.STATUS_DISABLED);
 		}
 		
 		userService.updateUser(staff);
