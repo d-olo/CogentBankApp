@@ -41,6 +41,7 @@ import com.learning.enums.ApprovedStatus;
 import com.learning.enums.ERole;
 import com.learning.enums.EnabledStatus;
 import com.learning.enums.TransactionType;
+import com.learning.exception.AccountDisabledException;
 import com.learning.exception.EnumNotFoundException;
 import com.learning.exception.IdNotFoundException;
 import com.learning.exception.NoDataFoundException;
@@ -392,19 +393,24 @@ public class CustomerController {
 	public ResponseEntity<?> addBeneficiary(
 			@PathVariable("id") Integer id, @Valid @RequestBody AddBeneficiaryRequest beneficiaryRequest) {
 		User user = userService.getUserById(id).orElseThrow(
-				()-> new RuntimeException("Sorry, Customer with ID: " + id + " not found"));
+				()-> new RuntimeException("Sorry, Customer with ID " + id + " not found"));
 		
 		Beneficiary beneficiary = new Beneficiary();
 		
 		Account account = accountService.findByAccountId(
 				beneficiaryRequest.getAccountNumber()
 				)
-				.orElseThrow(()-> new RuntimeException(
+				.orElseThrow(()-> new IdNotFoundException(
 						"Sorry, Account with ID: " + 
 						beneficiaryRequest.getAccountNumber() + 
 						" not found"));
 		
-
+		if(account.getEnabledStatus() == EnabledStatus.STATUS_DISABLED) {
+			throw new AccountDisabledException(
+					"Account " + 
+					beneficiaryRequest.getAccountNumber() + 
+					" is disabled. Please contact a staff member.");
+		}
 		
 		beneficiary.setAccountType(beneficiaryRequest.getAccountType());
 		beneficiary.setAccountNumber(beneficiaryRequest.getAccountNumber());
@@ -506,12 +512,24 @@ public class CustomerController {
 	public ResponseEntity<?> transferAmount(@Valid @RequestBody TransferRequest transferRequest) {
 		Account toAccount = accountService.findByAccountId(transferRequest.getToAccount())
 				.orElseThrow(
-						()-> new RuntimeException("Account not found")
+						()-> new RuntimeException("Account not found.")
 				);
 		Account fromAccount = accountService.findByAccountId(transferRequest.getFromAccount())
 				.orElseThrow(
-						()-> new RuntimeException("Account not found")
+						()-> new RuntimeException("Account not found.")
 				);
+		
+		if(fromAccount.getEnabledStatus() == EnabledStatus.STATUS_DISABLED) {
+			throw new AccountDisabledException(
+					"Account " + fromAccount.getAccountId() + 
+					" is disabled. Please contact a staff member.");
+		}
+		
+		if(toAccount.getEnabledStatus() == EnabledStatus.STATUS_DISABLED) {
+			throw new AccountDisabledException(
+					"Account " + toAccount.getAccountId() +
+					" is disabled. Please contact a staff member.");
+		}
 		
 		toAccount.setAccountBalance(toAccount.getAccountBalance() + transferRequest.getAmount());
 		fromAccount.setAccountBalance(fromAccount.getAccountBalance() - transferRequest.getAmount());

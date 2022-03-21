@@ -54,9 +54,12 @@ public class Account {
 	@ManyToOne
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude
-	@JsonBackReference
-	@JsonIgnore
 	private User accountOwner;
+
+	@JsonBackReference
+	public User getAccountOwner() {
+		return accountOwner;
+	}
 	
 	@Enumerated(EnumType.STRING)
 	private AccountType accountType;
@@ -69,9 +72,12 @@ public class Account {
 			fetch = FetchType.LAZY)
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude
-	@JsonManagedReference
-	@JsonIgnore
 	private Set<Transaction> transactions;
+
+	@JsonManagedReference
+	public Set<Transaction> getTransactions() {
+		return transactions;
+	}
 	
 	
 	
