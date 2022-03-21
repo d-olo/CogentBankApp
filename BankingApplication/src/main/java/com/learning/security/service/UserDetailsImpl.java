@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.learning.entity.User;
+import com.learning.enums.EnabledStatus;
 
 import lombok.Data;
 
@@ -26,18 +27,21 @@ public class UserDetailsImpl implements UserDetails {
 	private String fullName;
 	@JsonIgnore
 	private String password;
+	private EnabledStatus status;
 	
 	// Roles
 	private Collection<? extends GrantedAuthority> authorities;
 	
 	private UserDetailsImpl(Integer id, String username, 
-			String fullName, String password, 
+			String fullName, String password, EnabledStatus status,
 			Collection<? extends GrantedAuthority> authorities) {
 		this.id = id;
 		this.username = username;
 		this.fullName = fullName;
 		this.password = password;
+		this.status = status;
 		this.authorities = authorities;
+		
 	}
 	
 	public static UserDetailsImpl build(User user) {
@@ -45,7 +49,7 @@ public class UserDetailsImpl implements UserDetails {
 				.stream().map(role-> new SimpleGrantedAuthority(role.getRoleName().name()))
 				.collect(Collectors.toList());
 		return new UserDetailsImpl(user.getId(), user.getUsername(), 
-				user.getFullName(), user.getPassword(), authorities);
+				user.getFullName(), user.getPassword(), user.getEnabledStatus(), authorities);
 	}
 
 	@Override
@@ -81,8 +85,8 @@ public class UserDetailsImpl implements UserDetails {
 
 	@Override
 	public boolean isEnabled() {
-		return true;
-	}
+		return status != EnabledStatus.STATUS_DISABLED;
+		}
 	
 	@Override
 	public int hashCode() {

@@ -113,7 +113,7 @@ public class StaffController {
 				jwt, 
 				userDetailsImpl.getId(), 
 				userDetailsImpl.getUsername(), 
-				userDetailsImpl.getFullName(), 
+				userDetailsImpl.getFullName(), userDetailsImpl.getStatus(),
 				roles));
 	}
 	
@@ -126,7 +126,6 @@ public class StaffController {
 		
 		AccountStatementResponse accountResponse = new AccountStatementResponse();
 		accountResponse.setAccountNumber(account.getAccountId());
-//		accountResponse.setCustomerName(account.getAccountOwner().getFullName());
 		accountResponse.setCustomerName(userService
 				.getUserById(account.getAccountOwner().getId())
 				.orElseThrow(() -> new NoDataFoundException("Sorry, Customer Not Found")).getFullName());

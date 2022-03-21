@@ -15,14 +15,18 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.learning.enums.AccountType;
 import com.learning.enums.ApprovedStatus;
 import com.learning.enums.EnabledStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
 @AllArgsConstructor
@@ -47,6 +51,10 @@ public class Account {
 	private ApprovedStatus approvedStatus;
 	
 	@ManyToOne
+	@EqualsAndHashCode.Exclude
+	@ToString.Exclude
+	@JsonBackReference
+	@JsonIgnore
 	private User accountOwner;
 	
 	@Enumerated(EnumType.STRING)
@@ -58,6 +66,8 @@ public class Account {
 	@OneToMany(mappedBy = "account",
 			cascade = CascadeType.ALL,
 			fetch = FetchType.LAZY)
+	@EqualsAndHashCode.Exclude
+	@ToString.Exclude
 	private Set<Transaction> transactions;
 	
 	
