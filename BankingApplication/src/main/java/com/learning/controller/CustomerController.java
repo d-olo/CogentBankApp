@@ -3,8 +3,6 @@ package com.learning.controller;
 import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -59,6 +57,7 @@ import com.learning.payload.request.customer.ForgotPasswordRequest;
 import com.learning.payload.request.customer.RegisterCustomerRequest;
 import com.learning.payload.request.customer.TransferRequest;
 import com.learning.payload.response.GetCustomerResponse;
+import com.learning.payload.response.JsonMessageResponse;
 import com.learning.payload.response.JwtResponse;
 import com.learning.payload.response.TransferResponse;
 import com.learning.payload.response.customer.AccountByIdResponse;
@@ -429,14 +428,10 @@ public class CustomerController {
 		
 		beneficiaryService.addBeneficiary(beneficiary);
 		
-		AddBeneficiaryResponse response = new AddBeneficiaryResponse();
-		response.setAccountNumber(beneficiaryRequest.getAccountNumber());
-		response.setAccountType(beneficiaryRequest.getAccountType());
-		response.setApproved(beneficiaryRequest.getApprovedStatus());
+		JsonMessageResponse response = new JsonMessageResponse();
+		response.setMessage("Beneficiary with Account Number: "+ beneficiaryRequest.getAccountNumber() + " added");
 		
-		
-		return ResponseEntity.status(HttpStatus.OK).body(
-				response);
+		return ResponseEntity.status(HttpStatus.OK).body(response);
 	
 	}
 	
@@ -500,10 +495,15 @@ public class CustomerController {
 					userService.updateUser(user);
 				}
 			}
+			userService.updateUser(user);
+			beneficiaryService.deleteBeneficiary(beneficiaryId);
 			
+			JsonMessageResponse response = new JsonMessageResponse();
+			response.setMessage("Beneficiary deleted successfully");
 			
 			return ResponseEntity.status(HttpStatus.OK)
-					.body(new ApiMessage("Beneficiary deleted successfully"));
+					.body(response);
+
 		} else {
 			throw new NoDataFoundException("Unable to delete beneficiary");
 		}
@@ -571,16 +571,6 @@ public class CustomerController {
 	public ResponseEntity<?> forgotPassword(@Valid @PathVariable("username") String username) {
 		User user = userService.getUserByUsername(username).get();
 		
-//		if(user.getSecretQuestion().equals(forgotPasswordRequest.getSecretQuestion())
-//			&& user.getSecretAnswer().equals(forgotPasswordRequest.getSecretAnswer())) {
-//			
-//			
-//			
-//			
-//		} else {
-//			throw new DataMismatchException("Sorry your secret details are not matching");
-//		}
-		
 		GetCustomerDetails response = new GetCustomerDetails();
 		response.setSecretQ(user.getSecretQuestion());
 		response.setSecretA(user.getSecretAnswer());
@@ -605,6 +595,7 @@ public class CustomerController {
 			ApiMessage apiMessage = new ApiMessage();
 			apiMessage.setMessage("New password updated");
 			return ResponseEntity.status(HttpStatus.OK).body(apiMessage);
+      
 		} else {
 			throw new OperationFailedException("Sorry password not updated");
 		}

@@ -16,13 +16,11 @@ import lombok.Data;
 @Validated
 public class ApproveBeneficiaryRequest {
 	  @NotNull
-	  private Integer fromCustomer;
+	  private Integer customerId;
 	  @NotNull
-	  private Integer beneficiaryAcNo;
-	  @NotNull
-	  private Date beneficiaryAddedDate;
+	  private Integer beneficiaryAccountNumber;
 	  @NotNull
 	  @Enumerated(EnumType.STRING)
-	  private ApprovedStatus approvedStatus;
+	  private ApprovedStatus isApproved;
 
 }

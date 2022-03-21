@@ -26,25 +26,28 @@ import com.learning.entity.Account;
 import com.learning.entity.Beneficiary;
 import com.learning.entity.User;
 import com.learning.enums.ApprovedStatus;
-import com.learning.enums.BeneficiaryStatus;
+import com.learning.enums.ERole;
 import com.learning.exception.NoDataFoundException;
 import com.learning.payload.request.AuthenticationRequest;
 import com.learning.payload.request.staff.ApproveAccountRequest;
 import com.learning.payload.request.staff.ApproveBeneficiaryRequest;
 import com.learning.payload.request.staff.TransferRequest;
 import com.learning.payload.request.staff.UpdateCustomerStatusRequest;
+import com.learning.payload.response.JsonMessageResponse;
 import com.learning.payload.response.JwtResponse;
 import com.learning.payload.response.TransferResponse;
-import com.learning.payload.response.customer.AccountApproved;
 import com.learning.payload.response.customer.AccountStatementResponse;
 import com.learning.payload.response.customer.CustomerById;
-import com.learning.payload.response.staff.BeneficiaryApproved;
+import com.learning.payload.response.staff.ApproveAccountResponse;
+import com.learning.payload.response.staff.GetAllCustomersResponse;
+import com.learning.payload.response.staff.UnapprovedAccountResponse;
+import com.learning.payload.response.staff.UnapprovedBeneficiaryResponse;
 import com.learning.repo.AccountRepository;
 import com.learning.repo.BeneficiaryRepository;
-import com.learning.repo.UserRepository;
 import com.learning.security.jwt.JwtUtils;
 import com.learning.security.service.UserDetailsImpl;
 import com.learning.service.AccountService;
+import com.learning.service.UserService;
 
 @RestController
 @RequestMapping("/staff")
@@ -64,7 +67,7 @@ public class StaffController {
 	AccountService accountService;
 	
 	@Autowired
-	UserRepository userRepository;
+	UserService userService;
 	
 	@Autowired
 	AccountRepository accountRepository;
@@ -123,10 +126,9 @@ public class StaffController {
 		
 		AccountStatementResponse accountResponse = new AccountStatementResponse();
 		accountResponse.setAccountNumber(account.getAccountId());
-		//accountResponse.setCustomerName(account.getAccountOwner().getFullName());
-		accountResponse.setCustomerName(userRepository
-				.findById(account.getAccountOwner().getId())
-			.orElseThrow(() -> new NoDataFoundException("Sorry, Customer Not Found")).getUsername());
+		accountResponse.setCustomerName(userService
+				.getUserById(account.getAccountOwner().getId())
+				.orElseThrow(() -> new NoDataFoundException("Sorry, Customer Not Found")).getFullName());
 		accountResponse.setAccountBalance(account.getAccountBalance());
 		accountResponse.setTransactions(account.getTransactions());
 		return ResponseEntity.status(HttpStatus.OK).body(accountResponse);
@@ -135,14 +137,14 @@ public class StaffController {
 	@GetMapping("/beneficiary")
 	public ResponseEntity<?> getUnapprovedBeneficiaries() {
 		List<Beneficiary> beneficiaries = beneficiaryRepository.findAll();
-		List<BeneficiaryApproved> unapprovedLists = new ArrayList<BeneficiaryApproved>();
+		List<UnapprovedBeneficiaryResponse> unapprovedLists = new ArrayList<UnapprovedBeneficiaryResponse>();
 		for (Beneficiary beneficiary : beneficiaries) {
 			if(beneficiary.getApprovedStatus() == ApprovedStatus.STATUS_NOT_APPROVED) {
-				BeneficiaryApproved unapprovedList = new BeneficiaryApproved();
-				unapprovedList.setBeneficiaryId(beneficiary.getBeneficiaryId());
-				unapprovedList.setBeneficiaryAcNo(beneficiary.getAccountNumber());
-				unapprovedList.setBeneficiaryAddedDate(beneficiary.getBeneficiaryAddedDate());
-				unapprovedList.setApprovedStatus(beneficiary.getApprovedStatus());
+				UnapprovedBeneficiaryResponse unapprovedList = new UnapprovedBeneficiaryResponse();
+				unapprovedList.setFromCustomer(beneficiary.getMainUser().getId());
+				unapprovedList.setBeneficiaryAccountNumber(beneficiary.getAccountNumber());
+				unapprovedList.setDateAdded(beneficiary.getBeneficiaryAddedDate());
+				unapprovedList.setIsApproved(beneficiary.getApprovedStatus());
 				
 				unapprovedLists.add(unapprovedList);
 			}
@@ -154,20 +156,21 @@ public class StaffController {
 	@PutMapping("/beneficiary")
 	public ResponseEntity<?> approveBeneficiary
 		(@Valid @RequestBody ApproveBeneficiaryRequest request) {
-		User customer = userRepository.findById(request.getFromCustomer())
+		User customer = userService.getUserById(request.getCustomerId())
 				.orElseThrow(() -> new NoDataFoundException("Sorry, Beneficiary Not Approved"));
-		BeneficiaryApproved beneficiaryResponse = new BeneficiaryApproved();
+		UnapprovedBeneficiaryResponse beneficiaryResponse = new UnapprovedBeneficiaryResponse();
 		for (Beneficiary beneficiary : customer.getBeneficiaries()) {
-			if (beneficiary.getAccountNumber() == request.getBeneficiaryAcNo()) {
-				beneficiary.setApprovedStatus(request.getApprovedStatus());
-
-				beneficiaryResponse.setBeneficiaryId(beneficiary.getBeneficiaryId());
-				beneficiaryResponse.setBeneficiaryAcNo(beneficiary.getAccountNumber());
-				beneficiaryResponse.setBeneficiaryAddedDate(beneficiary.getBeneficiaryAddedDate());
-				beneficiaryResponse.setApprovedStatus(beneficiary.getApprovedStatus());
+			if (beneficiary.getAccountNumber() == request.getBeneficiaryAccountNumber()) {
+				beneficiary.setApprovedStatus(request.getIsApproved());
+				beneficiaryRepository.save(beneficiary);
+				
+				beneficiaryResponse.setFromCustomer(beneficiary.getBeneficiaryId());
+				beneficiaryResponse.setBeneficiaryAccountNumber(beneficiary.getAccountNumber());
+				beneficiaryResponse.setDateAdded(beneficiary.getBeneficiaryAddedDate());
+				beneficiaryResponse.setIsApproved(beneficiary.getApprovedStatus());
 			}
 		}
-		userRepository.save(customer);
+		userService.updateUser(customer);
 		
 		return ResponseEntity.status(HttpStatus.OK).body(beneficiaryResponse);
 	}
@@ -175,39 +178,34 @@ public class StaffController {
 	@GetMapping("/accounts/approve")
 	public ResponseEntity<?> getUnapprovedAccounts() {
 		List<Account> accounts	= accountRepository.findAll();
-		List<AccountApproved> unapprovedLists = new ArrayList<>();
+		List<UnapprovedAccountResponse> unapprovedList = new ArrayList<UnapprovedAccountResponse>();
 		for (Account account : accounts) {
 			if(account.getApprovedStatus() == ApprovedStatus.STATUS_NOT_APPROVED) {
-				AccountApproved unapprovedList = new AccountApproved();
-				unapprovedList.setAccountType(account.getAccountType().toString());
-	//			unapprovedList.setCustomerName(account.getAccountOwner().getFullName());
-				unapprovedList.setCustomerName(userRepository
-						.findById(account.getAccountOwner().getId())
+				UnapprovedAccountResponse unapprovedAccount = new UnapprovedAccountResponse();
+				unapprovedAccount.setAccountType(account.getAccountType().toString());
+				unapprovedAccount.setCustomerName(userService
+						.getUserById(account.getAccountOwner().getId())
 						.orElseThrow(() -> new NoDataFoundException("Sorry, Customer Not Found"))
 						.getFullName());
-				unapprovedList.setAccountNumber(account.getAccountId());
-				unapprovedList.setDateCreated(account.getDateCreated());
-				unapprovedList.setApprovedStatus(account.getApprovedStatus());
+				unapprovedAccount.setAccountNumber(account.getAccountId());
+				unapprovedAccount.setDateCreated(account.getDateCreated());
+				unapprovedAccount.setApproved(account.getApprovedStatus());
 				
-				unapprovedLists.add(unapprovedList);
+				unapprovedList.add(unapprovedAccount);
 			}
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(unapprovedLists);
+		return ResponseEntity.status(HttpStatus.OK).body(unapprovedList);
 	}
 	
 	@PutMapping("/accounts/approve")
 	public ResponseEntity<?> approveAccount
 		(@Valid @RequestBody ApproveAccountRequest request) {
-		Account account = accountRepository.getById(request.getAccNum());
+		Account account = accountRepository.getById(request.getAccountNumber());
 		account.setApprovedStatus(request.getApproved());
 		accountRepository.save(account);
-		ApproveAccountRequest accountResponse = new ApproveAccountRequest();
+		ApproveAccountResponse accountResponse = new ApproveAccountResponse();
 		accountResponse.setAccType(account.getAccountType().toString());
 		accountResponse.setCustomerName(account.getAccountOwner().getFullName());
-//		accountRespone.setCustomerName(userRepository
-//				.findById(account.getAccountOwner().getId())
-//				.orElseThrow(() -> new NoDataFoundException("Sorry, Customer Not Found"))
-//				.getFullName());
 		accountResponse.setAccNum(account.getAccountId());
 		accountResponse.setDateCreated(account.getDateCreated());
 		accountResponse.setApproved(account.getApprovedStatus());
@@ -218,14 +216,18 @@ public class StaffController {
 	
 	@GetMapping("/customer")
 	public ResponseEntity<?> getAllCustomers() {
-		List<Account> customers = accountRepository.findAll();
-		List<CustomerById> customersResponse = new ArrayList<>();
-		for(Account customer : customers) {
-			CustomerById customerInfo = new CustomerById();
-			customerInfo.setCustomerId(customer.getAccountOwner().getId());
-			customerInfo.setCustomerName(customer.getAccountOwner().getFullName());
+		List<User> customers = userService.getAllUsers();
+		List<GetAllCustomersResponse> customersResponse = new ArrayList<>();
+		for(User customer : customers) {
+			for(com.learning.entity.Role role : customer.getRoles()) {
+				if (role.getRoleName() != ERole.ROLE_CUSTOMER)
+					continue;
+			}
+			
+			GetAllCustomersResponse customerInfo = new GetAllCustomersResponse();
+			customerInfo.setCustomerId(customer.getId());
+			customerInfo.setCustomerName(customer.getFullName());
 			customerInfo.setStatus(customer.getEnabledStatus());
-			customerInfo.setCreated(customer.getDateCreated());
 			customersResponse.add(customerInfo);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(customersResponse);
@@ -234,11 +236,14 @@ public class StaffController {
 	@PutMapping("/customer")
 	public ResponseEntity<?> updateCustomerStatus
 		(@Valid @RequestBody UpdateCustomerStatusRequest request) {
-		Account customer = accountRepository.findById(request.getCustomerId())
+		User customer = userService.getUserById(request.getCustomerId())
 				.orElseThrow(() -> new NoDataFoundException("Sorry, Customer Status Not Changed"));
 		customer.setEnabledStatus(request.getStatus());
-		accountRepository.save(customer);
-		return ResponseEntity.status(HttpStatus.OK).body("Customer Status Changed");
+		userService.updateUser(customer);
+		
+		JsonMessageResponse response = new JsonMessageResponse();
+		response.setMessage("Customer status changed.");
+		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
 	@GetMapping("/customer/{customerId}")

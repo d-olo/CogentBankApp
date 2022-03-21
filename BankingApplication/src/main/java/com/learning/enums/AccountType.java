@@ -6,7 +6,14 @@ package com.learning.enums;
  * @since Mar 7, 2022
  */
 public enum AccountType {
-	CURRENT,
-	SAVINGS
-	
+	ACCOUNT_SAVINGS {
+		public String toString() {
+			return "Savings Account";
+		}
+	},
+	ACCOUNT_CHECKING {
+		public String toString() {
+			return "Current Account";
+		}
+	}
 }

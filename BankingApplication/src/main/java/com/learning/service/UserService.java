@@ -12,5 +12,7 @@ public interface UserService {
 	public Optional<User> getUserByUsername(String username);
 	public User updateUser(User user);
 	public List<User> findAllByRoleName(ERole roleName);
-	boolean existsByUsername(String username);
+	public List<User> getAllUsers();
+	public boolean existsByUsername(String username);
+
 }
