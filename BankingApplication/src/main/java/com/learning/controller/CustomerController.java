@@ -418,25 +418,8 @@ public class CustomerController {
 						beneficiaryRequest.getAccountNumber() + 
 						" not found"));
 		
-//		switch (beneficiaryRequest.getAccountType()) {
-//		case "SB":
-//			if(account.getAccountType() == AccountType.SAVINGS)
-//				beneficiary.setAccountType(AccountType.SAVINGS);
-//			else
-//				return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-//						.body("Beneficiary not added: wrong account type.");
-//			break;
-//		case "CA":
-//			if(account.getAccountType() == AccountType.CURRENT)
-//				beneficiary.setAccountType(AccountType.CURRENT);
-//			else
-//				return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-//						.body("Beneficiary not added: wrong account type.");
-//			break;
-//		default:
-//			break;
-//		}
-//		
+
+		
 		beneficiary.setAccountType(beneficiaryRequest.getAccountType());
 		beneficiary.setAccountNumber(beneficiaryRequest.getAccountNumber());
 		beneficiary.setApprovedStatus(beneficiaryRequest.getApprovedStatus());
@@ -477,7 +460,7 @@ public class CustomerController {
 			BeneficiaryListResponse beneficiaryList = new BeneficiaryListResponse();
 			beneficiaryList.setBeneficiaryId(e.getBeneficiaryId());
 			beneficiaryList.setBeneficiaryAccountNumber(e.getAccountNumber());
-			beneficiaryList.setBeneficiaryName(e.getMainUser().getFullName());
+			beneficiaryList.setBeneficiaryName(e.getMainUser().getUsername());
 			beneficiaryList.setActiveStatus(e.getActiveStatus());
 			
 			response.add(beneficiaryList);			
@@ -561,7 +544,7 @@ public class CustomerController {
 		Transaction toTransaction = new Transaction();
 		toTransaction.setReference(transferRequest.getReason());
 		toTransaction.setDate(Date.valueOf(now.toLocalDate()));
-		toTransaction.setAccount(fromAccount);
+		toTransaction.setAccount(toAccount);
 		toTransaction.setAmount(transferRequest.getAmount());
 		toTransaction.setTransactionType(TransactionType.DEBIT);
 		

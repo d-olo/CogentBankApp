@@ -54,5 +54,9 @@ public class UserServiceImpl implements UserService {
 		
 		return usersOfRole;
 	}
-
+	
+	@Override
+	public boolean existsByUsername(String username) {
+		return userRepository.existsByUsername(username);
+	}
 }

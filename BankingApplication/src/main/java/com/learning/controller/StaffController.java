@@ -123,10 +123,10 @@ public class StaffController {
 		
 		AccountStatementResponse accountResponse = new AccountStatementResponse();
 		accountResponse.setAccountNumber(account.getAccountId());
-//		accountResponse.setCustomerName(account.getAccountOwner().getFullName());
+		//accountResponse.setCustomerName(account.getAccountOwner().getFullName());
 		accountResponse.setCustomerName(userRepository
 				.findById(account.getAccountOwner().getId())
-				.orElseThrow(() -> new NoDataFoundException("Sorry, Customer Not Found")).getFullName());
+			.orElseThrow(() -> new NoDataFoundException("Sorry, Customer Not Found")).getUsername());
 		accountResponse.setAccountBalance(account.getAccountBalance());
 		accountResponse.setTransactions(account.getTransactions());
 		return ResponseEntity.status(HttpStatus.OK).body(accountResponse);

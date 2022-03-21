@@ -15,7 +15,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.learning.enums.AccountType;
 import com.learning.enums.ApprovedStatus;
 import com.learning.enums.EnabledStatus;
@@ -51,6 +53,8 @@ public class Account {
 	@ManyToOne
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude
+	@JsonBackReference
+	@JsonIgnore
 	private User accountOwner;
 	
 	@Enumerated(EnumType.STRING)
