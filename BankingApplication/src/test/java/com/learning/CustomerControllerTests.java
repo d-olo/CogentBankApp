@@ -47,14 +47,14 @@ class CustomerControllerTests {
 	void testCreateAccount() {
 		AddAccountRequest request = new AddAccountRequest();
 		request.setAccountBalance(200.00);
-		request.setAccountType(AccountType.CURRENT);
+		request.setAccountType(AccountType.ACCOUNT_CURRENT);
 		
 		AddAccountResponse response = 
 				(AddAccountResponse) customerController.addAccount(1, request)
 					.getBody();
 		
 		assertNotNull(response);
-		assertEquals(AccountType.SAVINGS, response.getAccountType());
+		assertEquals(AccountType.ACCOUNT_SAVINGS, response.getAccountType());
 		assertEquals(200.0, response.getAccountBalance());
 		assertEquals(ApprovedStatus.STATUS_NOT_APPROVED, response.getApprovedStatus());
 	}
@@ -84,7 +84,7 @@ class CustomerControllerTests {
 	void testAddBeneficiary() {
 		AddBeneficiaryRequest request = new AddBeneficiaryRequest();
 		request.setAccountNumber(12);
-		request.setAccountType(AccountType.SAVINGS);
+		request.setAccountType(AccountType.ACCOUNT_SAVINGS);
 		
 		customerController.addBeneficiary(1, request);
 	}

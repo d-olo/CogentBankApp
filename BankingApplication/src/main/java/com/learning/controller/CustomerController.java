@@ -3,6 +3,7 @@ package com.learning.controller;
 import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -490,19 +491,17 @@ public class CustomerController {
 					//beneficiaries.remove(beneficiary);
 					//beneficiaryService.deleteBeneficiary(beneficiaryId);
 					
-					System.out.println(beneficiary);
+					//System.out.println(beneficiary);
 					System.out.println(beneficiaries);
 					userService.updateUser(user);
 				}
 			}
-			userService.updateUser(user);
-			beneficiaryService.deleteBeneficiary(beneficiaryId);
+		
 			
-			JsonMessageResponse response = new JsonMessageResponse();
-			response.setMessage("Beneficiary deleted successfully");
+			
 			
 			return ResponseEntity.status(HttpStatus.OK)
-					.body(response);
+					.body(new ApiMessage("Beneficiary deleted successfully"));
 
 		} else {
 			throw new NoDataFoundException("Unable to delete beneficiary");
