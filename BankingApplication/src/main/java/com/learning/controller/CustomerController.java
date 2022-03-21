@@ -289,7 +289,7 @@ public class CustomerController {
 		accounts.forEach(e-> {
 			GetAccountResponse accountList = new GetAccountResponse();
 			accountList.setAccountNumber(e.getAccountId());
-			accountList.setAccountType(e.getAccountType());
+			accountList.setAccountType(e.getAccountType().toString());
 			accountList.setAccountBalance(e.getAccountBalance());
 			accountList.setEnableStatus(e.getEnabledStatus());
 			response.add(accountList);

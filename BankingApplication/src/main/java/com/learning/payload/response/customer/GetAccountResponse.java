@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 public class GetAccountResponse {
-	private AccountType accountType;
+	private String accountType;
 	private Double accountBalance;
 	private EnabledStatus enableStatus;
 	private Integer accountNumber;
