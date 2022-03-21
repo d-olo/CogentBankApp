@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import com.learning.entity.User;
 import com.learning.entity.Role;
 import com.learning.enums.ERole;
+import com.learning.enums.EnabledStatus;
 import com.learning.exception.EnumNotFoundException;
 import com.learning.repo.RoleRepository;
 import com.learning.service.UserService;
@@ -51,6 +52,7 @@ public class SetAdmin {
 			Set<Role> roles = new HashSet<Role>();
 			roles.add(role);
 			admin.setRoles(roles);
+			admin.setEnabledStatus(EnabledStatus.STATUS_ENABLED);
 		
 			
 		

@@ -181,7 +181,7 @@ public class CustomerController {
 				jwt, 
 				userDetailsImpl.getId(), 
 				userDetailsImpl.getUsername(), 
-				userDetailsImpl.getFullName(), 
+				userDetailsImpl.getFullName(), userDetailsImpl.getStatus(),
 				roles));
 	
 	}

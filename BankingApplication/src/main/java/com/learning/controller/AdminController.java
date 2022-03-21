@@ -93,7 +93,7 @@ public class AdminController {
 				.body(new JwtResponse(jwt, 
 						userDetailsImpl.getId(), 
 						userDetailsImpl.getUsername(), 
-						userDetailsImpl.getFullName(), 
+						userDetailsImpl.getFullName(), userDetailsImpl.getStatus(),
 						roles));
 	}
 	
