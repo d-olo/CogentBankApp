@@ -12,4 +12,5 @@ public interface UserService {
 	public Optional<User> getUserByUsername(String username);
 	public User updateUser(User user);
 	public List<User> findAllByRoleName(ERole roleName);
+	public List<User> getAllUsers();
 }

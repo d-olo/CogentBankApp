@@ -3,7 +3,6 @@ package com.learning.controller;
 import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -56,6 +55,7 @@ import com.learning.payload.request.customer.ForgotPasswordRequest;
 import com.learning.payload.request.customer.RegisterCustomerRequest;
 import com.learning.payload.request.customer.TransferRequest;
 import com.learning.payload.response.GetCustomerResponse;
+import com.learning.payload.response.JsonMessageResponse;
 import com.learning.payload.response.JwtResponse;
 import com.learning.payload.response.TransferResponse;
 import com.learning.payload.response.customer.AccountByIdResponse;
@@ -440,8 +440,10 @@ public class CustomerController {
 		
 		beneficiaryService.addBeneficiary(beneficiary);
 		
-		return ResponseEntity.status(HttpStatus.OK).body(
-				"Beneficiary with Account Number: "+ beneficiaryRequest.getAccountNumber() + " added");
+		JsonMessageResponse response = new JsonMessageResponse();
+		response.setMessage("Beneficiary with Account Number: "+ beneficiaryRequest.getAccountNumber() + " added");
+		
+		return ResponseEntity.status(HttpStatus.OK).body(response);
 	
 	}
 	
@@ -493,8 +495,12 @@ public class CustomerController {
 			}
 			userService.updateUser(user);
 			beneficiaryService.deleteBeneficiary(beneficiaryId);
+			
+			JsonMessageResponse response = new JsonMessageResponse();
+			response.setMessage("Beneficiary deleted successfully");
+			
 			return ResponseEntity.status(HttpStatus.OK)
-					.body("Beneficiary deleted successfully");
+					.body(response);
 		} else {
 			throw new NoDataFoundException("Unable to delete beneficiary");
 		}
@@ -543,7 +549,11 @@ public class CustomerController {
 			&& user.getSecretQuestion().equals(forgotPasswordRequest.getSecretQuestion())
 			&& user.getSecretAnswer().equals(forgotPasswordRequest.getSecretAnswer())) {
 			
-			return ResponseEntity.status(HttpStatus.OK).body("Details validated");
+
+			JsonMessageResponse response = new JsonMessageResponse();
+			response.setMessage("Details validated.");
+			
+			return ResponseEntity.status(HttpStatus.OK).body(response);
 			
 			
 		} else {
@@ -563,8 +573,11 @@ public class CustomerController {
 			user.setPassword(passwordEncoder.encode(authRequest.getPassword()));
 		
 			userService.updateUser(user);
+			
+			JsonMessageResponse response = new JsonMessageResponse();
+			response.setMessage("Beneficiary deleted successfully");
 		
-			return ResponseEntity.status(HttpStatus.OK).body("New password updated");
+			return ResponseEntity.status(HttpStatus.OK).body(response);
 		} else {
 			throw new OperationFailedException("Sorry password not updated");
 		}

@@ -1,4 +1,6 @@
-package com.learning.payload.request.staff;
+package com.learning.payload.response.staff;
+
+import java.sql.Date;
 
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -13,12 +15,19 @@ import lombok.Data;
 
 @Data
 @Validated
-public class ApproveAccountRequest {
-	@NotNull
-	private Integer accountNumber;
+public class ApproveAccountResponse {
 	@NotBlank
-	private String staffUsername;
+	private String accType; 
+	@NotBlank
+    private String customerName; 
+	@NotNull
+    private Integer accNum; 
+	@NotNull
+    private Date dateCreated; 
 	@NotNull
 	@Enumerated(EnumType.STRING)
-	private ApprovedStatus approved;
+    private ApprovedStatus approved;
+	@NotBlank
+    private String staffUsername; 
+
 }

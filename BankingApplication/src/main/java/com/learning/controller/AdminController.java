@@ -40,6 +40,7 @@ import com.learning.payload.request.admin.CreateStaffRequest;
 import com.learning.payload.request.admin.RegisterAdminRequest;
 import com.learning.payload.request.admin.SetStaffEnabledRequest;
 import com.learning.payload.response.AdminRegisterResponse;
+import com.learning.payload.response.JsonMessageResponse;
 import com.learning.payload.response.JwtResponse;
 import com.learning.repo.RoleRepository;
 import com.learning.security.jwt.JwtUtils;
@@ -111,7 +112,11 @@ public class AdminController {
 		roles.add(staffRole);
 		staff.setRoles(roles);
 		userService.addUser(staff);
-		return ResponseEntity.status(HttpStatus.OK).body("staff added");
+
+		JsonMessageResponse response = new JsonMessageResponse();
+		response.setMessage("Staff added.");
+		
+		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
 	
