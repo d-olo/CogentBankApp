@@ -2,9 +2,7 @@ package com.learning.controller;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -27,7 +25,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
 import com.learning.entity.Role;
 import com.learning.entity.User;
 import com.learning.enums.ERole;
@@ -37,11 +34,9 @@ import com.learning.exception.IdNotFoundException;
 import com.learning.exception.UnauthorizedAccessException;
 import com.learning.payload.request.AuthenticationRequest;
 import com.learning.payload.request.admin.CreateStaffRequest;
-import com.learning.payload.request.admin.RegisterAdminRequest;
 import com.learning.payload.request.admin.SetStaffEnabledRequest;
-import com.learning.payload.response.AdminRegisterResponse;
-import com.learning.payload.response.JsonMessageResponse;
 import com.learning.payload.response.JwtResponse;
+import com.learning.payload.response.admin.GetStaffResponse;
 import com.learning.payload.response.customer.CustomerRegisterResponse;
 import com.learning.payload.response.staff.StaffResponse;
 import com.learning.repo.RoleRepository;
@@ -130,16 +125,16 @@ public class AdminController {
 	public ResponseEntity<?> getAllStaff() {
 		List<User> staff = new ArrayList<>();
 		staff = userService.findAllByRoleName(ERole.ROLE_STAFF);
-		List<StaffResponse> staffResponses = new ArrayList<>();
+		List<GetStaffResponse> staffResponses = new ArrayList<GetStaffResponse>();
 		System.out.println(staff.size());
 		if (staff.size() > 0) {
-			for (User u : staff) {
-				StaffResponse  staffRespose = new StaffResponse();
-				staffRespose.setStaffId(u.getId());
-				staffRespose.setStaffUserName(u.getUsername());
-				staffRespose.setStaffName(u.getFullName());
-				staffRespose.setStatus(u.getEnabledStatus());
-				staffResponses.add(staffRespose);
+			for (User user : staff) {
+				GetStaffResponse staffResponse = new GetStaffResponse();
+				staffResponse.setStaffId(user.getId());
+				staffResponse.setStaffUsername(user.getUsername());
+				staffResponse.setStaffName(user.getFullName());
+				staffResponse.setStatus(user.getEnabledStatus());
+				staffResponses.add(staffResponse);
 			}
 
 		}
@@ -174,38 +169,4 @@ public class AdminController {
 		return ResponseEntity.status(HttpStatus.OK).body(staffResponse);
 	}
 	
-//	@PostMapping("/register")
-//	public ResponseEntity<?> register(
-//			@Valid @RequestBody RegisterAdminRequest request) {
-//		
-//		// Creating new user.
-//		User user = new User();
-//		user.setUsername(request.getUsername());
-//		
-//		user.setPassword(passwordEncoder.encode(request.getPassword()));
-//		
-//		// Initialization of roles with Admin
-//		Set<Role> roles = new HashSet<Role>();
-//		Role adminRole = roleRepository.findByRoleName(ERole.ROLE_ADMIN)
-//				.orElseThrow(() -> 
-//					new EnumNotFoundException("User role not in database."));
-//		roles.add(adminRole);
-//
-//		user.setRoles(roles);
-//		
-//		// Initialization of empty fields.
-//		user.setAccounts(null);
-//		user.setEnabledStatus(null);
-//		user.setBeneficiaries(null);
-//		
-//		// Adding user to DB.
-//		User regUser = userService.addUser(user);
-//		
-//		AdminRegisterResponse registerResponse = new AdminRegisterResponse();
-//		registerResponse.setId(regUser.getId());
-//		registerResponse.setUsername(regUser.getUsername());
-//		registerResponse.setPassword(regUser.getPassword());
-//		
-//		return ResponseEntity.status(HttpStatus.CREATED).body(registerResponse);
-//	}
 }

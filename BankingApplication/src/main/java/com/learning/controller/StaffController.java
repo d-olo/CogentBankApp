@@ -1,5 +1,7 @@
 package com.learning.controller;
 
+import java.sql.Date;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,9 +27,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.learning.entity.Account;
 import com.learning.entity.Beneficiary;
 import com.learning.entity.Role;
+import com.learning.entity.Transaction;
 import com.learning.entity.User;
 import com.learning.enums.ApprovedStatus;
 import com.learning.enums.ERole;
+import com.learning.enums.EnabledStatus;
+import com.learning.enums.TransactionType;
+import com.learning.exception.AccountDisabledException;
 import com.learning.exception.NoDataFoundException;
 import com.learning.payload.request.AuthenticationRequest;
 import com.learning.payload.request.staff.ApproveAccountRequest;
@@ -203,6 +209,9 @@ public class StaffController {
 		(@Valid @RequestBody ApproveAccountRequest request) {
 		Account account = accountRepository.getById(request.getAccountNumber());
 		account.setApprovedStatus(request.getApproved());
+		if(request.getApproved() == ApprovedStatus.STATUS_APPROVED) {
+			account.setEnabledStatus(EnabledStatus.STATUS_ENABLED);
+		}
 		accountRepository.save(account);
 		ApproveAccountResponse accountResponse = new ApproveAccountResponse();
 		accountResponse.setAccType(account.getAccountType().toString());
@@ -269,21 +278,53 @@ public class StaffController {
 	
 	@PutMapping("/transfer")
 	public ResponseEntity<?> transfer
-	(@Valid @RequestBody TransferRequest request) {
-		Account fromAccount = accountService.findByAccountId(request.getFromAccNumber())
-				.orElseThrow(() -> new NoDataFoundException("From Account Number Not Vaild"));
-		Account toAccount = accountService.findByAccountId(request.getToAccNumber())
-				.orElseThrow(() -> new NoDataFoundException("To Account Number Not Vaild"));
+	(@Valid @RequestBody TransferRequest transferRequest) {
+		Account fromAccount = accountService.findByAccountId(transferRequest.getFromAccNumber())
+				.orElseThrow(() -> new NoDataFoundException("Sending account number not valid"));
+		Account toAccount = accountService.findByAccountId(transferRequest.getToAccNumber())
+				.orElseThrow(() -> new NoDataFoundException("Receiving account number not valid"));
 		
-		fromAccount.setAccountBalance(fromAccount.getAccountBalance() - request.getAmount());
-		toAccount.setAccountBalance(toAccount.getAccountBalance() + request.getAmount());
+		if(fromAccount.getEnabledStatus() == EnabledStatus.STATUS_DISABLED) {
+			throw new AccountDisabledException(
+					"Account " + fromAccount.getAccountId() + 
+					" is disabled. Please contact a staff member.");
+		}
+		
+		if(toAccount.getEnabledStatus() == EnabledStatus.STATUS_DISABLED) {
+			throw new AccountDisabledException(
+					"Account " + toAccount.getAccountId() +
+					" is disabled. Please contact a staff member.");
+		}
+		
+		fromAccount.setAccountBalance(fromAccount.getAccountBalance() - transferRequest.getAmount());
+		toAccount.setAccountBalance(toAccount.getAccountBalance() + transferRequest.getAmount());
+		
+		LocalDateTime now = LocalDateTime.now(); 
+		
+		Transaction fromTransaction = new Transaction();
+		fromTransaction.setReference(transferRequest.getReason());
+		fromTransaction.setDate(Date.valueOf(now.toLocalDate()));
+		fromTransaction.setAccount(fromAccount);
+		fromTransaction.setAmount(-transferRequest.getAmount());
+		fromTransaction.setTransactionType(TransactionType.DEBIT);
+		
+		fromAccount.getTransactions().add(fromTransaction);
+		
+		Transaction toTransaction = new Transaction();
+		toTransaction.setReference(transferRequest.getReason());
+		toTransaction.setDate(Date.valueOf(now.toLocalDate()));
+		toTransaction.setAccount(toAccount);
+		toTransaction.setAmount(transferRequest.getAmount());
+		toTransaction.setTransactionType(TransactionType.DEBIT);
+		
+		toAccount.getTransactions().add(toTransaction);
 		
 		TransferResponse transferResponse = new TransferResponse();
 		transferResponse.setFromAccNumber(fromAccount.getAccountId());
 		transferResponse.setToAccNumber(toAccount.getAccountId());
-		transferResponse.setAmount(request.getAmount());
-		transferResponse.setReason(request.getReason());
-		transferResponse.setBy(request.getBy());		
+		transferResponse.setAmount(transferRequest.getAmount());
+		transferResponse.setReason(transferRequest.getReason());
+		transferResponse.setBy(transferRequest.getBy());		
 		accountService.updateAccount(fromAccount);
 		accountService.updateAccount(toAccount);
 		

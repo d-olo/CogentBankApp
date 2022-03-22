@@ -60,9 +60,12 @@ public class User {
 			fetch = FetchType.LAZY)
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude
-	@JsonManagedReference
-	@JsonIgnore
 	private Set<Account> accounts;
+
+	@JsonManagedReference
+	public Set<Account> getAccounts() {
+		return accounts;
+	}
 	
 	@Enumerated(EnumType.STRING)
 	private EnabledStatus enabledStatus;
