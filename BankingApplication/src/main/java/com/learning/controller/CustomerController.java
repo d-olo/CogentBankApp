@@ -42,6 +42,7 @@ import com.learning.enums.ERole;
 import com.learning.enums.EnabledStatus;
 import com.learning.enums.TransactionType;
 import com.learning.exception.AccountDisabledException;
+import com.learning.exception.DataMismatchException;
 import com.learning.exception.EnumNotFoundException;
 import com.learning.exception.IdNotFoundException;
 import com.learning.exception.NoDataFoundException;
@@ -410,6 +411,10 @@ public class CustomerController {
 					"Account " + 
 					beneficiaryRequest.getAccountNumber() + 
 					" is disabled. Please contact a staff member.");
+		}
+		
+		if(beneficiaryRequest.getAccountType() != account.getAccountType()) {
+			throw new DataMismatchException("The account type is incorrect.");
 		}
 		
 		beneficiary.setAccountType(beneficiaryRequest.getAccountType());
