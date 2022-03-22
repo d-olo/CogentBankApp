@@ -512,11 +512,11 @@ public class CustomerController {
 	public ResponseEntity<?> transferAmount(@Valid @RequestBody TransferRequest transferRequest) {
 		Account toAccount = accountService.findByAccountId(transferRequest.getToAccount())
 				.orElseThrow(
-						()-> new RuntimeException("Account not found.")
+						()-> new IdNotFoundException("Account not found.")
 				);
 		Account fromAccount = accountService.findByAccountId(transferRequest.getFromAccount())
 				.orElseThrow(
-						()-> new RuntimeException("Account not found.")
+						()-> new IdNotFoundException("Account not found.")
 				);
 		
 		if(fromAccount.getEnabledStatus() == EnabledStatus.STATUS_DISABLED) {
